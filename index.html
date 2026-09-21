@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
 
-  <!-- Live2D Cubism Core 及 Pixi 渲染驱动库 -->
+  <!-- Live2D Cubism Core 及 Pixi 渲染引擎驱动 -->
   <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.8/dist/browser/pixi.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -92,7 +92,7 @@
       transform: scale(0.92);
     }
 
-    /* Live2D 专属 Canvas 画布容器 */
+    /* Live2D 画布容器 */
     .char-stage {
       position: absolute;
       top: 0;
@@ -104,15 +104,17 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      pointer-events: none;
     }
 
     #live2dCanvas {
       width: 100%;
       height: 100%;
       display: block;
+      pointer-events: auto;
     }
 
-    /* 🍬 果冻对话框容器 */
+    /* 果冻对话框容器 */
     .dialogue-wrapper {
       position: absolute;
       bottom: 82px;
@@ -483,7 +485,7 @@
 </head>
 <body>
 
-  <!-- 开屏小羊动画与初次档案填写 -->
+  <!-- 开屏小羊动画与身份录入 -->
   <div class="opening-screen" id="openingScreen">
     <div class="sheep-track">
       <div class="rolling-sheep-box">
@@ -494,7 +496,7 @@
 
     <div class="name-input-panel" id="nameInputPanel">
       <input type="text" id="initPlayerName" class="name-input" placeholder="输入你的名字..." maxlength="12">
-      <input type="text" id="initPlayerPersona" class="name-input" placeholder="输入你的人设（如：普通饲主/学生）..." maxlength="30">
+      <input type="text" id="initPlayerPersona" class="name-input" placeholder="输入你的人设（如：饲主/学生）..." maxlength="30">
       <button class="name-btn" onclick="submitPlayerProfile()">进入手机世界</button>
     </div>
   </div>
@@ -507,12 +509,12 @@
       <button class="btn-config" onclick="openConfigModal()">⚙️ 设置</button>
     </div>
 
-    <!-- Live2D 动态画布 -->
+    <!-- Live2D 画布 -->
     <div class="char-stage">
       <canvas id="live2dCanvas"></canvas>
     </div>
 
-    <!-- 🍬 果冻对话框 -->
+    <!-- 果冻对话框 -->
     <div class="dialogue-wrapper">
       <div class="char-name-badge" id="nameBadge">
         <span class="badge-icon">💖</span>
@@ -552,7 +554,7 @@
       
       <div style="color: #ffb8d6; font-size: 16px; font-weight: 900; text-align: center;">⚙️ 核心设置</div>
 
-      <!-- 1. 玩家档案与身份随时改写 -->
+      <!-- 1. 身份档案 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #ff7ebb; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">👤 玩家身份档案改写</span>
@@ -601,13 +603,13 @@
         <input type="text" id="cfgChatModel" placeholder="gpt-4o-mini" style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
       </div>
 
-      <!-- 4. MiniMax 角色配音配置 -->
+      <!-- 4. 配音配置 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #ba5bb0; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #ffb8d6; font-size: 12.5px; font-weight: 900;">🎙️ MiniMax 配音配置</div>
 
         <div style="display: flex; gap: 6px;">
           <input type="text" id="cfgMiniMaxGroupId" placeholder="GroupId" style="flex: 1; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
-          <input type="password" id="cfgMiniMaxVoiceKey" placeholder="语音 Key (可留空共用)" style="flex: 1.4; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
+          <input type="password" id="cfgMiniMaxVoiceKey" placeholder="语音 Key (留空共用对话Key)" style="flex: 1.4; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         </div>
 
         <div class="custom-select-wrap">
@@ -648,7 +650,7 @@
         </div>
       </div>
 
-      <!-- 5. 记忆管理与导出 -->
+      <!-- 5. 记忆压缩 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #5a73b5; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #9cb5ff; font-size: 12.5px; font-weight: 900;">🧠 记忆自动总结 & 导出</div>
 
@@ -658,7 +660,7 @@
         </div>
 
         <span style="color: #ffd6eb; font-size: 11px;">总结 Prompt 模版:</span>
-        <textarea id="cfgSummaryPrompt" rows="2" style="background: #14091c; border: 1.5px solid #5a73b5; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; font-family: inherit; resize: none;">请以简短客观的条目，总结玩家与奈在此前对话中发生的核心事件、好感度增减、约定与称呼变化。</textarea>
+        <textarea id="cfgSummaryPrompt" rows="2" style="background: #14091c; border: 1.5px solid #5a73b5; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; font-family: inherit; resize: none;">请以简短客观的条目，总结双方发生的核心事件、好感度增减、约定与称呼变化。</textarea>
 
         <button type="button" onclick="exportChatHistory()" style="background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%); color: white; border: none; height: 32px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer;">📋 导出完整对话记录 (.txt)</button>
       </div>
@@ -675,25 +677,29 @@
 
   <script>
     /* ============================================================
-     * 1. 核心安全解密器（内存实时解密，防止盗模）
+     * 1. 核心安全解密器（全管道拦截，保证 moc3 和贴图还原）
      * ============================================================ */
-    const DECRYPT_KEY = 0x7B; // 解密秘钥
+    const DECRYPT_KEY = 0x7B;
 
-    // 劫持浏览器底层资源请求，在内存中还原受保护的文件头
+    function decryptBuffer(buffer) {
+      const data = new Uint8Array(buffer);
+      const limit = Math.min(data.length, 1024);
+      for (let i = 0; i < limit; i++) {
+        data[i] ^= DECRYPT_KEY;
+      }
+      return data.buffer;
+    }
+
+    // 1.1 拦截全局 fetch (Cubism 核心加载 moc3 走 fetch)
     const originalFetch = window.fetch;
     window.fetch = async function(url, options) {
       const response = await originalFetch(url, options);
-      const urlStr = typeof url === 'string' ? url : url.url;
+      const urlStr = typeof url === 'string' ? url : (url && url.url ? url.url : '');
       
-      // 仅拦截从 model 文件夹加载的核心二进制资产
-      if (urlStr.includes('/model/') && (urlStr.endsWith('.moc3') || urlStr.match(/\.(png|jpg|jpeg)$/i))) {
+      if (urlStr.includes('model/') && (urlStr.endsWith('.moc3') || urlStr.match(/\.(png|jpg|jpeg)$/i))) {
         const buffer = await response.arrayBuffer();
-        const data = new Uint8Array(buffer);
-        const limit = Math.min(data.length, 1024);
-        for (let i = 0; i < limit; i++) {
-          data[i] ^= DECRYPT_KEY; // 内存 XOR 解密
-        }
-        return new Response(data, {
+        const decrypted = decryptBuffer(buffer);
+        return new Response(decrypted, {
           headers: response.headers,
           status: response.status,
           statusText: response.statusText
@@ -702,8 +708,32 @@
       return response;
     };
 
+    // 1.2 拦截 Pixi 内部贴图加载管道，强制走 XHR 二进制解密后生成 Base64 Image
+    PIXI.Loader.shared.pre((resource, next) => {
+      const url = resource.url || '';
+      if (url.includes('model/') && url.match(/\.(png|jpg|jpeg)$/i)) {
+        resource.loadType = PIXI.LoaderResource.LOAD_TYPE.XHR;
+        resource.xhrType = PIXI.LoaderResource.XHR_RESPONSE_TYPE.BLOB;
+      }
+      next();
+    });
+
+    PIXI.Loader.shared.use(async (resource, next) => {
+      const url = resource.url || '';
+      if (url.includes('model/') && url.match(/\.(png|jpg|jpeg)$/i) && resource.data instanceof Blob) {
+        const buffer = await resource.data.arrayBuffer();
+        const decrypted = decryptBuffer(buffer);
+        const blob = new Blob([decrypted], { type: 'image/png' });
+        const img = new Image();
+        img.src = URL.createObjectURL(blob);
+        await img.decode();
+        resource.texture = PIXI.Texture.from(img);
+      }
+      next();
+    });
+
     /* ============================================================
-     * 2. Live2D 动态渲染挂载（原生眨眼、呼吸与对口型）
+     * 2. Live2D 动态模型渲染
      * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
@@ -721,14 +751,13 @@
       });
 
       try {
-        // 加载加密保护目录下的模型入口
         live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
           autoInteract: false
         });
 
         live2dApp.stage.addChild(live2dModel);
 
-        // 视口比例居中与缩放匹配
+        // 视口比例与位置自适应
         const scaleX = (stage.clientWidth * 0.95) / live2dModel.width;
         const scaleY = (stage.clientHeight * 0.95) / live2dModel.height;
         const finalScale = Math.min(scaleX, scaleY);
@@ -744,7 +773,6 @@
       }
     }
 
-    // 表情映射字典（直接驱动模型中的各 exp3.json 表情）
     const EXP_MAP = {
       "POUT": "生气",
       "SHY": "脸红",
@@ -758,7 +786,6 @@
 
     function setModelExpression(emoCode) {
       if (!live2dModel || !live2dModel.internalModel) return;
-      
       let expName = "";
       for (const key in EXP_MAP) {
         if (emoCode.includes(key)) {
@@ -766,24 +793,21 @@
           break;
         }
       }
-
       try {
         if (expName && live2dModel.expressionManager) {
           live2dModel.expression(expName);
         }
       } catch (e) {
-        console.warn("表情设置微调:", e);
+        console.warn("表情设置异常:", e);
       }
     }
 
-    // 驱动 Live2D 参数开合张嘴
     function startModelLipSync() {
       stopModelLipSync();
       let toggle = false;
       mouthParamTimer = setInterval(() => {
         if (live2dModel && live2dModel.internalModel && live2dModel.internalModel.coreModel) {
           const val = toggle ? 0.85 : 0.15;
-          // 适配 Cubism 4 标准口型参数
           live2dModel.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', val);
           toggle = !toggle;
         }
@@ -801,7 +825,7 @@
     }
 
     /* ============================================================
-     * 3. 像素小羊开屏绘制
+     * 3. 像素小羊绘制
      * ============================================================ */
     function drawPixelSheep() {
       const cvs = document.getElementById('sheepCanvas');
@@ -902,7 +926,7 @@
 `;
 
     /* ============================================================
-     * 5. 开屏动画与名字/人设
+     * 5. 开屏与身份
      * ============================================================ */
     let playerName = localStorage.getItem('nai_player_name') || '';
     let playerPersona = localStorage.getItem('nai_player_persona') || '普通人类';
@@ -993,7 +1017,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
     }
 
     /* ============================================================
-     * 7. 用户交互、单句演出流与 Live2D 对口型
+     * 7. 用户交互、单句演出流与对口型
      * ============================================================ */
     let scriptQueue = [];
     let currentStepIndex = 0;
@@ -1077,7 +1101,6 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       currentVoiceBlob = null;
       btnDownloadVoice.style.display = 'none';
 
-      // 驱动 Live2D 表情
       setModelExpression(item.emo);
 
       if (item.speaker === 'ACT') {
@@ -1095,7 +1118,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
         dialogueContent.className = "dialogue-content";
         btnPlayVoice.style.opacity = '1';
         btnRetryVoice.style.opacity = '1';
-        typeWriterEffect(item.zh, true); // 台词吐字驱动对口型
+        typeWriterEffect(item.zh, true);
       }
 
       nextIndicator.style.display = (index < scriptQueue.length - 1) ? 'inline-block' : 'none';
@@ -1151,7 +1174,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
     }
 
     /* ============================================================
-     * 8. MiniMax 语音配音合成与对口型联动
+     * 8. MiniMax 语音配音合成
      * ============================================================ */
     async function synthesizeMiniMaxVoice(textToSpeak) {
       const chatKey = localStorage.getItem('nai_chat_key');
@@ -1448,7 +1471,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       pitchValText.textContent = savedPitch;
 
       cfgSummaryRounds.value = localStorage.getItem('nai_summary_rounds') || '8';
-      cfgSummaryPrompt.value = localStorage.getItem('nai_summary_prompt') || '请以简短客观的条目，总结玩家与奈在此前对话中发生的核心事件、好感度增减、约定与称呼变化。';
+      cfgSummaryPrompt.value = localStorage.getItem('nai_summary_prompt') || '请以简短客观的条目，总结双方发生的核心事件、好感度增减、约定与称呼变化。';
     }
 
     function openConfigModal() { 
@@ -1515,7 +1538,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       }
     }
 
-    // 启动运行
+    // 页面初始化
     loadSavedConfig();
     initSystemPrompt();
     handleOpeningFlow();
