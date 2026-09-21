@@ -370,9 +370,8 @@
     @keyframes heartBlink { 0% { transform: scale(1) translateY(-6px); } 100% { transform: scale(1.25) translateY(-10px); } }
 
     .name-input-panel {
-      width: 84%; max-width: 280px; display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateY(15px); transition: all 0.6s ease; margin-top: 12px;
+      width: 84%; max-width: 280px; display: flex; flex-direction: column; gap: 10px; margin-top: 12px;
     }
-    .name-input-panel.show { opacity: 1; transform: translateY(0); }
     .name-input {
       background: rgba(255, 255, 255, 0.08); border: 2px solid #ff7ebb; border-radius: 14px; height: 42px; padding: 0 14px; color: #fff; font-size: 14px; font-weight: 900; outline: none; text-align: center; user-select: text; font-family: inherit;
     }
@@ -525,7 +524,7 @@
     // 触碰与连击计数
     let clickComboCount = 0;
     let comboResetTimer = null;
-    let isLocked = false; // 锁链锁定状态
+    let isLocked = false;
 
     // 触碰台词预设库
     const TOUCH_DIALOGUES = {
@@ -538,7 +537,7 @@
       horn: [
         { act: "（你轻轻碰了碰他脑袋两侧通透的粉色水晶羊角，奈立刻挺起小胸脯，一脸骄傲地扬起下巴）", talk: "哈哈！你们人类没有吧~这可是本王子最引以为傲地角哦~", emo: "STAR" },
         { act: "（你好奇地多抚摸了两下水晶角，奈狐疑地盯着你，眼神里满是警惕与嫌弃）", talk: "什么? 你还要摸吗？你洗手了吧....", emo: "DARK" },
-        { act: "（你假装要认真擦手再摸，奈红着脸小声嘟囔，眼神飘忽不定）", talk: "...只 monolayer 摸一下的话...好...好吧...", emo: "SHY" }
+        { act: "（你假装要认真擦手再摸，奈红着脸小声嘟囔，眼神飘忽不定）", talk: "...只摸一下的话...好...好吧...", emo: "SHY" }
       ],
       body: [
         { act: "（你轻轻戳了戳他薄荷绿裹胸吊带的边缘，奈像触电一样猛地往后一弹，满脸通红地捂住胸口）", talk: "不可以！绝对不可以！你怎么能随随便便....碰...那里...", emo: "POUT" },
@@ -579,7 +578,6 @@
         live2dModel.x = stage.clientWidth * 0.50;
         live2dModel.y = stage.clientHeight * 0.53;
 
-        // 默认常驻激活呆毛物理摆动
         try { live2dModel.expression("呆毛摆动"); } catch(e){}
 
         bindModelTouchInteractions();
@@ -591,19 +589,17 @@
       }
     }
 
-    /* 触碰交互响应与 10连击锁链锁定 */
     function bindModelTouchInteractions() {
       if (!live2dModel) return;
       live2dModel.interactive = true;
       live2dModel.buttonMode = true;
 
       live2dModel.on('pointerdown', (event) => {
-        if (isLocked) return; // 锁链锁定期间禁止点击
+        if (isLocked) return;
 
         const point = event.data.global;
         const localPoint = live2dModel.toLocal(point);
         
-        // 区域划分：y < -20 为头部，-20 ~ 50 为羊角区域，y > 50 为身体
         let targetPart = 'body';
         if (localPoint.y < -30) targetPart = 'head';
         else if (localPoint.y >= -30 && localPoint.y <= 40) targetPart = 'horn';
@@ -620,20 +616,17 @@
       let item = null;
 
       if (clickComboCount >= 10) {
-        // 触发 10 连击锁链锁定 5 秒
         item = TOUCH_DIALOGUES.combo10[0];
         triggerChainLock();
         clickComboCount = 0;
       } else {
         const list = TOUCH_DIALOGUES[part] || TOUCH_DIALOGUES.body;
-        // 顺序或随机抽取台词
         const index = (clickComboCount - 1) % list.length;
         item = list[index];
       }
 
       setModelExpression(item.emo);
 
-      // 单句分页单页展示
       scriptQueue = [
         { speaker: 'ACT', emo: item.emo, text: item.act },
         { speaker: 'NA', emo: item.emo, zh: item.talk, ja: item.talk }
@@ -745,9 +738,8 @@
     function setModelExpression(emoCode) {
       if (!live2dModel || !live2dModel.internalModel) return;
 
-      // 1. 贴屏特写镜头缩放判定
       if (emoCode.includes("HEART") || emoCode.includes("STAR")) {
-        targetCameraScaleMult = 1.30; // 放大至半身贴屏特写
+        targetCameraScaleMult = 1.30;
         targetCameraOffsetY = -20;
       } else if (emoCode.includes("SHY") || emoCode.includes("DARK") || emoCode.includes("POUT")) {
         targetCameraScaleMult = 1.05;
@@ -760,7 +752,6 @@
         targetCameraOffsetY = 0;
       }
 
-      // 2. 表情叠加与呆毛常态摆动激活
       try {
         if (live2dModel.expressionManager) {
           try { live2dModel.expression("呆毛摆动"); } catch (e) {}
@@ -778,7 +769,6 @@
     function startModelLipSync() { isSpeaking = true; }
     function stopModelLipSync() { isSpeaking = false; }
 
-    /* 像素小羊 */
     function drawPixelSheep() {
       const cvs = document.getElementById('sheepCanvas');
       if (!cvs) return;
@@ -826,7 +816,6 @@
     }
     drawPixelSheep();
 
-    /* 身份与开屏 */
     let playerName = localStorage.getItem('nai_player_name') || '';
     let playerPersona = localStorage.getItem('nai_player_persona') || '普通人类';
 
@@ -867,9 +856,6 @@
       }
     }
 
-    /* ============================================================
-     * 智能语义表情关联 + 纯单句切片分页引擎
-     * ============================================================ */
     let chatHistory = [];
     function initSystemPrompt() {
       const customStyle = localStorage.getItem('nai_custom_style') || '';
@@ -989,7 +975,6 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
       currentVoiceBlob = null;
       btnDownloadVoice.style.display = 'none';
 
-      // 实时联动表情与特写缩放
       setModelExpression(item.emo);
 
       if (item.speaker === 'ACT') {
@@ -1052,7 +1037,6 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
       }
     }
 
-    /* 语音合成（内置 NA 读音矫正为 な） */
     async function synthesizeMiniMaxVoice(textToSpeak) {
       const chatKey = localStorage.getItem('nai_chat_key');
       const voiceKey = localStorage.getItem('nai_minimax_voice_key');
@@ -1069,7 +1053,6 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
         return;
       }
 
-      // 矫正名字发音：将对话中的 NA 转换为日音 “な” 确保语音引擎精准朗读
       const correctedText = textToSpeak.replace(/NA/g, 'な').replace(/Na/g, 'な').replace(/na/g, 'な');
 
       statusText.textContent = "🎙️ 合成中...";
@@ -1176,7 +1159,6 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
 
     function onRerollStoryClick(e) { e.stopPropagation(); if (!lastSentUserText) return; sendMessage(true); }
 
-    /* 设置面板 */
     const configModal = document.getElementById('configModal');
     const cfgPlayerName = document.getElementById('cfgPlayerName');
     const cfgPlayerPersona = document.getElementById('cfgPlayerPersona');
