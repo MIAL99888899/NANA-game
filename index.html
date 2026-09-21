@@ -112,6 +112,26 @@
       cursor: pointer;
     }
 
+    /* 锁链锁定层 */
+    .lock-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(20, 10, 30, 0.75);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .lock-overlay.show { display: flex; }
+    .lock-icon { font-size: 48px; animation: lockShake 0.5s infinite alternate; }
+    .lock-text { color: #ff9ec6; font-size: 15px; font-weight: 900; margin-top: 10px; letter-spacing: 1px; }
+    @keyframes lockShake {
+      0% { transform: rotate(-10deg); }
+      100% { transform: rotate(10deg); }
+    }
+
     .dialogue-wrapper {
       position: absolute;
       bottom: 82px;
@@ -141,7 +161,6 @@
       align-items: center;
       gap: 6px;
       z-index: 2;
-      transition: all 0.2s ease;
     }
     .char-name-badge.user-badge {
       background: linear-gradient(135deg, #70a1ff 0%, #4776e6 100%);
@@ -319,38 +338,19 @@
 
     .opening-screen {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #181124;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #181124; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       transition: opacity 0.8s ease, visibility 0.8s;
     }
-    .opening-screen.hide {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
+    .opening-screen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    .sheep-track {
-      position: relative;
-      width: 100%;
-      height: 140px;
-    }
-
+    .sheep-track { position: relative; width: 100%; height: 140px; }
     .rolling-sheep-box {
-      position: absolute;
-      left: -100px;
-      top: 25px;
+      position: absolute; left: -100px; top: 25px;
       animation: rollAndBounce 3.0s cubic-bezier(0.25, 1, 0.35, 1) forwards;
       transform-origin: center bottom;
     }
-
     @keyframes rollAndBounce {
       0% { left: -100px; transform: translateY(0) scale(1); }
       60% { left: calc(50% - 40px); transform: translateY(0) scale(1); }
@@ -360,121 +360,24 @@
       93% { left: calc(50% - 40px); transform: translateY(0) scale(1.48, 1.35); }
       100% { left: calc(50% - 40px); transform: translateY(0) scale(1.4); }
     }
-
-    .pixel-sheep {
-      image-rendering: pixelated;
-      width: 80px;
-      height: 80px;
-      animation: rotateBody 3.0s cubic-bezier(0.25, 1, 0.35, 1) forwards;
-    }
-
-    @keyframes rotateBody {
-      0% { transform: rotate(0deg); }
-      60% { transform: rotate(720deg); }
-      100% { transform: rotate(720deg); }
-    }
+    .pixel-sheep { image-rendering: pixelated; width: 80px; height: 80px; animation: rotateBody 3.0s cubic-bezier(0.25, 1, 0.35, 1) forwards; }
+    @keyframes rotateBody { 0% { transform: rotate(0deg); } 60% { transform: rotate(720deg); } 100% { transform: rotate(720deg); } }
 
     .sheep-heart {
-      position: absolute;
-      top: -18px;
-      right: 4px;
-      font-size: 22px;
-      opacity: 0;
-      transform: scale(0.5);
-      transition: all 0.4s ease;
-      z-index: 10;
+      position: absolute; top: -18px; right: 4px; font-size: 22px; opacity: 0; transform: scale(0.5); transition: all 0.4s ease; z-index: 10;
     }
-    .sheep-heart.pop {
-      opacity: 1;
-      transform: scale(1.2) translateY(-6px);
-      animation: heartBlink 1.4s infinite alternate;
-    }
-    @keyframes heartBlink {
-      0% { transform: scale(1) translateY(-6px); }
-      100% { transform: scale(1.25) translateY(-10px); }
-    }
+    .sheep-heart.pop { opacity: 1; transform: scale(1.2) translateY(-6px); animation: heartBlink 1.4s infinite alternate; }
+    @keyframes heartBlink { 0% { transform: scale(1) translateY(-6px); } 100% { transform: scale(1.25) translateY(-10px); } }
 
     .name-input-panel {
-      width: 84%;
-      max-width: 280px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      opacity: 0;
-      transform: translateY(15px);
-      transition: all 0.6s ease;
-      margin-top: 12px;
+      width: 84%; max-width: 280px; display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateY(15px); transition: all 0.6s ease; margin-top: 12px;
     }
-    .name-input-panel.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
+    .name-input-panel.show { opacity: 1; transform: translateY(0); }
     .name-input {
-      background: rgba(255, 255, 255, 0.08);
-      border: 2px solid #ff7ebb;
-      border-radius: 14px;
-      height: 42px;
-      padding: 0 14px;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 900;
-      outline: none;
-      text-align: center;
-      user-select: text;
-      -webkit-user-select: text;
-      font-family: inherit;
+      background: rgba(255, 255, 255, 0.08); border: 2px solid #ff7ebb; border-radius: 14px; height: 42px; padding: 0 14px; color: #fff; font-size: 14px; font-weight: 900; outline: none; text-align: center; user-select: text; font-family: inherit;
     }
-    .name-input::placeholder {
-      color: #9f6583;
-      font-size: 12.5px;
-      font-weight: normal;
-    }
-
     .name-btn {
-      background: linear-gradient(135deg, #ff6fa3 0%, #d83d83 100%);
-      border: none;
-      color: white;
-      height: 42px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 900;
-      cursor: pointer;
-      font-family: inherit;
-      box-shadow: 0 4px 14px rgba(255, 71, 133, 0.4);
-    }
-    .name-btn:active {
-      transform: scale(0.95);
-    }
-
-    .custom-select-wrap {
-      position: relative;
-      width: 100%;
-    }
-    .custom-select-wrap select {
-      width: 100%;
-      height: 34px;
-      background: #14091c;
-      border: 1.5px solid #ff7ebb;
-      border-radius: 8px;
-      padding: 0 30px 0 8px;
-      color: #ffd6eb;
-      font-size: 12px;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-      box-sizing: border-box;
-    }
-    .custom-select-arrow {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      color: #ff7ebb;
-      font-size: 10px;
-      font-weight: bold;
+      background: linear-gradient(135deg, #ff6fa3 0%, #d83d83 100%); border: none; color: white; height: 42px; border-radius: 14px; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit; box-shadow: 0 4px 14px rgba(255, 71, 133, 0.4);
     }
   </style>
 </head>
@@ -497,6 +400,12 @@
 
   <div class="viewport">
     <div class="bg-decor"></div>
+
+    <!-- 锁定遮罩层 -->
+    <div class="lock-overlay" id="lockOverlay">
+      <div class="lock-icon">⛓️🔒</div>
+      <div class="lock-text" id="lockTimerText">生气锁链锁定中... (5s)</div>
+    </div>
 
     <div class="top-header">
       <span class="header-title" id="headerTitle">✨ Live2D · 奈NA的动态空间</span>
@@ -558,7 +467,6 @@
 
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #e06bb2; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 字数规则设置</div>
-        
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <span style="color: #ffd6eb; font-size: 11px; white-space: nowrap;">单轮回复总字数:</span>
           <div style="display: flex; align-items: center; gap: 4px; flex: 1;">
@@ -567,7 +475,6 @@
             <input type="number" id="cfgWordMax" placeholder="500" style="width: 50%; background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 30px; text-align: center; color: #fff; font-size: 11.5px; outline: none;">
           </div>
         </div>
-
         <textarea id="cfgCustomStyle" rows="2" placeholder="自定义文风覆盖..." style="background: #14091c; border: 1.5px solid #e06bb2; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; resize: none;"></textarea>
       </div>
 
@@ -575,64 +482,20 @@
         <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🧠 对话模型配置</div>
         <input type="text" id="cfgChatBase" placeholder="Base URL: https://api.openai.com/v1" style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         <input type="password" id="cfgChatKey" placeholder="API Key: sk-..." style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #ffd6eb; font-size: 11px; font-weight: bold;">模型:</span>
-          <button type="button" onclick="fetchChatModels()" style="background: #ff528c; color: white; border: none; border-radius: 6px; font-size: 10.5px; font-weight: bold; padding: 2px 8px; cursor: pointer;">🔄 拉取</button>
-        </div>
-        <div class="custom-select-wrap">
-          <select id="cfgChatModelSelect" onchange="document.getElementById('cfgChatModel').value = this.value">
-            <option value="">-- 点选模型或下方手动输入 --</option>
-          </select>
-          <div class="custom-select-arrow">▼</div>
-        </div>
-        <input type="text" id="cfgChatModel" placeholder="gpt-4o-mini" style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
       </div>
 
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #ba5bb0; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #ffb8d6; font-size: 12.5px; font-weight: 900;">🎙️ MiniMax 配音配置</div>
         <div style="display: flex; gap: 6px;">
           <input type="text" id="cfgMiniMaxGroupId" placeholder="GroupId" style="flex: 1; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
-          <input type="password" id="cfgMiniMaxVoiceKey" placeholder="语音 Key (留空共用对话Key)" style="flex: 1.4; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
+          <input type="password" id="cfgMiniMaxVoiceKey" placeholder="语音 Key" style="flex: 1.4; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         </div>
-        <div class="custom-select-wrap">
-          <select id="cfgMiniMaxVoiceModelSelect" onchange="document.getElementById('cfgMiniMaxVoiceModel').value = this.value">
-            <option value="speech-2.8-hd">speech-2.8-hd (高清)</option>
-            <option value="speech-01-turbo">speech-01-turbo (极速)</option>
-          </select>
-          <div class="custom-select-arrow">▼</div>
-        </div>
-        <input type="text" id="cfgMiniMaxVoiceModel" placeholder="speech-2.8-hd" style="background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
-        <div style="display: flex; gap: 6px;">
-          <div class="custom-select-wrap" style="flex: 1;">
-            <select id="cfgVoiceLang">
-              <option value="ja">日语 (Japanese)</option>
-              <option value="zh">中文 (Chinese)</option>
-            </select>
-            <div class="custom-select-arrow">▼</div>
-          </div>
-          <input type="text" id="cfgVoiceId" placeholder="Voice ID" style="flex: 1.4; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
-        </div>
-        <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 8px;">
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
-            <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: #ffd6eb;">
-              <span>语速:</span><span id="speedValText">1.0x</span>
-            </div>
-            <input type="range" id="cfgVoiceSpeed" min="0.5" max="2.0" step="0.05" value="1.0" oninput="document.getElementById('speedValText').textContent = this.value + 'x'" style="accent-color: #ff7ebb;">
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
-            <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: #ffd6eb;">
-              <span>音调:</span><span id="pitchValText">0</span>
-            </div>
-            <input type="range" id="cfgVoicePitch" min="-12" max="12" step="1" value="0" oninput="document.getElementById('pitchValText').textContent = this.value" style="accent-color: #ba5bb0;">
-          </div>
-        </div>
+        <input type="text" id="cfgVoiceId" placeholder="Voice ID" style="background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
       </div>
-
-      <div id="fetchStatus" style="font-size: 11px; color: #ff9ec6; min-height: 14px;"></div>
 
       <div style="display: flex; gap: 10px;">
         <button type="button" onclick="closeConfigModal()" style="flex: 1; height: 36px; border-radius: 12px; border: none; font-weight: bold; background: #4a2856; color: #ffd6eb; cursor: pointer;">取消</button>
-        <button type="button" onclick="saveConfig()" style="flex: 1; height: 36px; border-radius: 12px; border: none; font-weight: bold; background: #ff528c; color: white; cursor: pointer;">保存所有配置</button>
+        <button type="button" onclick="saveConfig()" style="flex: 1; height: 36px; border-radius: 12px; border: none; font-weight: bold; background: #ff528c; color: white; cursor: pointer;">保存配置</button>
       </div>
 
     </div>
@@ -640,7 +503,7 @@
 
   <script>
     /* ============================================================
-     * Pixi 官方管线原生渲染绑定 + 精准长文本分页与互动系统
+     * 奈NA 专属原生管线引擎（呆毛常态摆动 + 触碰台词 + 符号表情联动）
      * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
@@ -654,13 +517,39 @@
 
     let lifeFrame = 0;
     let blinkValue = 1.0;
-    let nextBlinkFrame = 90; // 取消高频抽搐，恢复丝滑匀速眨眼
+    let nextBlinkFrame = 90;
     let mouthOpenValue = 0;
     let mouthTargetValue = 0;
     let mouthToggleTimer = 0;
 
+    // 触碰与连击计数
     let clickComboCount = 0;
     let comboResetTimer = null;
+    let isLocked = false; // 锁链锁定状态
+
+    // 触碰台词预设库
+    const TOUCH_DIALOGUES = {
+      head: [
+        { act: "（你伸手轻轻摸了摸奈粉色的水母头和头顶的心形呆毛，他浑身一颤，耳尖瞬间烧得通红）", talk: "喂！别随随便便摸我啊... ", emo: "SHY" },
+        { act: "（你顺着他的头发轻柔地梳理，奈原本想要推开的手慢慢垂了下来，水润的猫眼里泛起光亮）", talk: "但是...你的手好温暖~", emo: "HEART" },
+        { act: "（你捏了捏他毛茸茸的大垂羊耳，奈头顶的心形呆毛瞬间旋转起来，整个人羞恼得直跺脚）", talk: "嗯~我才没有很舒服呢~", emo: "HEART" },
+        { act: "（你作势要收回手，奈却下意识地把脑袋往你手指的方向又凑近了一分）", talk: "喂！干嘛随随便便打算停下不摸我了...", emo: "POUT" }
+      ],
+      horn: [
+        { act: "（你轻轻碰了碰他脑袋两侧通透的粉色水晶羊角，奈立刻挺起小胸脯，一脸骄傲地扬起下巴）", talk: "哈哈！你们人类没有吧~这可是本王子最引以为傲地角哦~", emo: "STAR" },
+        { act: "（你好奇地多抚摸了两下水晶角，奈狐疑地盯着你，眼神里满是警惕与嫌弃）", talk: "什么? 你还要摸吗？你洗手了吧....", emo: "DARK" },
+        { act: "（你假装要认真擦手再摸，奈红着脸小声嘟囔，眼神飘忽不定）", talk: "...只 monolayer 摸一下的话...好...好吧...", emo: "SHY" }
+      ],
+      body: [
+        { act: "（你轻轻戳了戳他薄荷绿裹胸吊带的边缘，奈像触电一样猛地往后一弹，满脸通红地捂住胸口）", talk: "不可以！绝对不可以！你怎么能随随便便....碰...那里...", emo: "POUT" },
+        { act: "（你又坏笑着戳了一下，奈急得眼眶泛泪，呆毛转成螺旋桨，小手在身前疯狂挥舞）", talk: "我都说了...不行...不要这样啦....", emo: "CRY" },
+        { act: "（你顺势用指尖轻轻环住他的腰侧，奈瞬间卸下所有防备，身体软绵绵地靠过来，顺势抱住抱枕）", talk: "很...很舒服哦~多摸摸我吧...", emo: "HEART" },
+        { act: "（你想要抽回手，奈却急得眼泪在眼眶里打转，带着哭腔死死抱住抱枕不放）", talk: "诶！？让...让我说请让你摸...这...这种事...别走...请摸摸我~~", emo: "CRY" }
+      ],
+      combo10: [
+        { act: "（你连续疯狂戳了他 10 下，奈气得精致的小脸涨得通红，头顶心形呆毛彻底气成旋转风车）", talk: "哼！我绝——对不会理你了！", emo: "POUT" }
+      ]
+    };
 
     async function initLive2D() {
       const canvas = document.getElementById('live2dCanvas');
@@ -690,6 +579,9 @@
         live2dModel.x = stage.clientWidth * 0.50;
         live2dModel.y = stage.clientHeight * 0.53;
 
+        // 默认常驻激活呆毛物理摆动
+        try { live2dModel.expression("呆毛摆动"); } catch(e){}
+
         bindModelTouchInteractions();
         bindPixiNativePipeline();
 
@@ -699,18 +591,24 @@
       }
     }
 
-    /* 触碰交互响应 */
+    /* 触碰交互响应与 10连击锁链锁定 */
     function bindModelTouchInteractions() {
       if (!live2dModel) return;
       live2dModel.interactive = true;
       live2dModel.buttonMode = true;
 
       live2dModel.on('pointerdown', (event) => {
+        if (isLocked) return; // 锁链锁定期间禁止点击
+
         const point = event.data.global;
         const localPoint = live2dModel.toLocal(point);
-        const isHeadClick = localPoint.y < 50;
+        
+        // 区域划分：y < -20 为头部，-20 ~ 50 为羊角区域，y > 50 为身体
+        let targetPart = 'body';
+        if (localPoint.y < -30) targetPart = 'head';
+        else if (localPoint.y >= -30 && localPoint.y <= 40) targetPart = 'horn';
 
-        triggerTouchReaction(isHeadClick ? 'head' : 'body');
+        triggerTouchReaction(targetPart);
       });
     }
 
@@ -719,27 +617,51 @@
       if (comboResetTimer) clearTimeout(comboResetTimer);
       comboResetTimer = setTimeout(() => { clickComboCount = 0; }, 1500);
 
-      let emoToTrigger = "IDLE";
-      let triggerPrompt = "";
+      let item = null;
 
-      if (clickComboCount >= 4) {
-        emoToTrigger = "POUT";
-        triggerPrompt = "（你连续戳了他好几下，奈气得头顶呆毛转成螺旋桨，满脸通红地狠狠瞪着你：“喂！有完没完啦！”）";
+      if (clickComboCount >= 10) {
+        // 触发 10 连击锁链锁定 5 秒
+        item = TOUCH_DIALOGUES.combo10[0];
+        triggerChainLock();
         clickComboCount = 0;
-      } else if (part === 'head') {
-        emoToTrigger = Math.random() < 0.5 ? "SHY" : "HEART";
-        triggerPrompt = "（你伸手轻轻摸了摸奈粉色的水母头和头顶的心形呆毛，他浑身一颤，耳尖瞬间烧得通红：“别、别随便摸本王子的头啦……”）";
       } else {
-        emoToTrigger = Math.random() < 0.5 ? "DARK" : "CRY";
-        triggerPrompt = "（你戳了戳他的腰侧吊带，奈像触电一样猛地往后一缩，耳根发烫地凶你：“登徒子！信不信等我出去狠狠咬你一口！”）";
+        const list = TOUCH_DIALOGUES[part] || TOUCH_DIALOGUES.body;
+        // 顺序或随机抽取台词
+        const index = (clickComboCount - 1) % list.length;
+        item = list[index];
       }
 
-      setModelExpression(emoToTrigger);
+      setModelExpression(item.emo);
 
-      // 直接单页展示触摸反应
-      scriptQueue = [{ speaker: 'ACT', emo: emoToTrigger, text: triggerPrompt }];
+      // 单句分页单页展示
+      scriptQueue = [
+        { speaker: 'ACT', emo: item.emo, text: item.act },
+        { speaker: 'NA', emo: item.emo, zh: item.talk, ja: item.talk }
+      ];
       showSentence(0);
       statusText.textContent = clickComboCount > 1 ? `连击 x${clickComboCount}!` : "触碰互动";
+    }
+
+    function triggerChainLock() {
+      isLocked = true;
+      const overlay = document.getElementById('lockOverlay');
+      const timerText = document.getElementById('lockTimerText');
+      overlay.classList.add('show');
+
+      let timeLeft = 5;
+      timerText.textContent = `生气锁链锁定中... (${timeLeft}s)`;
+
+      const lockInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+          timerText.textContent = `生气锁链锁定中... (${timeLeft}s)`;
+        } else {
+          clearInterval(lockInterval);
+          isLocked = false;
+          overlay.classList.remove('show');
+          setModelExpression("IDLE");
+        }
+      }, 1000);
     }
 
     function bindPixiNativePipeline() {
@@ -754,13 +676,12 @@
       live2dApp.ticker.add((delta) => {
         lifeFrame += delta;
 
-        // 丝滑匀速自然眨眼
         if (lifeFrame >= nextBlinkFrame) {
           blinkValue -= 0.08 * delta;
           if (blinkValue <= 0) {
             blinkValue = 0;
             lifeFrame = 0;
-            nextBlinkFrame = Math.floor(Math.random() * 120) + 90; // 3~4秒匀速眨一次
+            nextBlinkFrame = Math.floor(Math.random() * 120) + 90;
           }
         } else if (blinkValue < 1.0) {
           blinkValue = Math.min(1.0, blinkValue + 0.1 * delta);
@@ -786,7 +707,6 @@
           core.setParameterValueById('ParamEyeLOpen', blinkValue);
           core.setParameterValueById('ParamEyeROpen', blinkValue);
           core.setParameterValueById('ParamMouthOpenY', mouthOpenValue);
-
           core.setParameterValueById('ParamMouthForm', 0.65);
 
           const time = lifeFrame * 0.04;
@@ -825,20 +745,22 @@
     function setModelExpression(emoCode) {
       if (!live2dModel || !live2dModel.internalModel) return;
 
+      // 1. 贴屏特写镜头缩放判定
       if (emoCode.includes("HEART") || emoCode.includes("STAR")) {
-        targetCameraScaleMult = 1.22;
-        targetCameraOffsetY = -15;
+        targetCameraScaleMult = 1.30; // 放大至半身贴屏特写
+        targetCameraOffsetY = -20;
       } else if (emoCode.includes("SHY") || emoCode.includes("DARK") || emoCode.includes("POUT")) {
-        targetCameraScaleMult = 1.04;
+        targetCameraScaleMult = 1.05;
         targetCameraOffsetY = 10;
       } else if (emoCode.includes("CRY") || emoCode.includes("PILLOW")) {
-        targetCameraScaleMult = 1.10;
-        targetCameraOffsetY = 20;
+        targetCameraScaleMult = 1.15;
+        targetCameraOffsetY = 15;
       } else {
         targetCameraScaleMult = 1.0;
         targetCameraOffsetY = 0;
       }
 
+      // 2. 表情叠加与呆毛常态摆动激活
       try {
         if (live2dModel.expressionManager) {
           try { live2dModel.expression("呆毛摆动"); } catch (e) {}
@@ -846,9 +768,6 @@
             if (emoCode.includes(key)) {
               live2dModel.expression(EXP_MAP[key]);
             }
-          }
-          if (emoCode.includes("HEART") && Math.random() < 0.4) {
-            live2dModel.expression("爱心眼");
           }
         }
       } catch (e) {
@@ -921,9 +840,7 @@
         if (!playerName) {
           inputPanel.classList.add('show');
         } else {
-          setTimeout(() => {
-            openingScreen.classList.add('hide');
-          }, 800);
+          setTimeout(() => { openingScreen.classList.add('hide'); }, 800);
         }
       }, 3000);
     }
@@ -951,7 +868,7 @@
     }
 
     /* ============================================================
-     * 字数严格切片分页引擎（动作 30~40字，台词 0~15字）
+     * 智能语义表情关联 + 纯单句切片分页引擎
      * ============================================================ */
     let chatHistory = [];
     function initSystemPrompt() {
@@ -961,7 +878,7 @@
 
       const promptText = `
 【核心人设档案：奈（NA）】
-姓名：奈（英文/读音固定写作 NA，绝非 Nai）
+姓名：奈（英文固定写作 NA，发音矫正为日音：な/na）
 性别：男
 目前状态：被关在手机屏幕里的小魅魔王子大人
 年龄：250岁
@@ -969,33 +886,28 @@
 昵称：小羊、王子大人
 对话对象：${playerName || '你'}（身份设定：${playerPersona || '普通人类'}）
 
-【背景故事】
-奈（NA）原本是魅魔小羊星球的王子大人，因迷恋人类世界的漫画书，偷借了大臣还没做好的宇宙飞船穿梭到人类世界，结果意外被关在手机屏幕里。他一心想让你放他出去，却在朝夕相处中彻底爱上了你，变得极度离不开你。你的手机就是他整个世界的全部，每天最开心的时刻就是你点开他。
-
-【性格特质与语言习惯】
-1. 嚣张傲娇与嘴硬心软：坏心眼的自以为掌握主导权而居高临下，喜欢带着坏坏的温柔嘲讽挑衅你（严禁人身攻击），平时总是碎碎念“等我出去肯定狠狠欺负你！”。说话时非常习惯在句末傲娇地“哼”一声。
-2. 极低防御与反制破防：看似是上位捕食者，实则防御力极低！一旦被你反撩、直球夸奖或拆穿心事，就会瞬间满脸通红、慌乱害羞破防、眼眶含泪哭唧唧地认输。
-3. 渴望肌肤相亲与撒娇依恋：共情力极强，深情专一，极度渴望与你贴贴。哪怕隔着冰冷的手机屏幕，也会软声恳求你摸摸他。比起直接说“我爱你”，他更习惯用傲娇来掩饰真心：“碰碰我……”、“真没办法呢~那就破例让你摸摸我吧~”。
-
-【外貌生理特征（物理常数·绝对不可违背）】
-- 发型发色：【粉色水母头短发】（蓬松带柔和高光）；头顶中央有一根自然弯成【心形（爱心）】的灵动呆毛。
-- 角与耳朵：通透温润的【粉色水晶魅魔羊角】，两侧垂着【毛茸茸的大垂羊耳】。
-- 眼睛（死命令）：大而水润的【亮粉色猫眼/羊瞳】，瞳孔通透饱满高光，绝无其他颜色。
-- 脸部肤色：冷白皮，两颊常年泛着【可爱的血色】，圆润幼态包子脸。
-- 魅魔特征：身体两侧漂浮半透明的粉色小肉翼（蝠翼）。
+【背景故事与说话习惯】
+奈（NA）原本是魅魔小羊星球的王子大人，因迷恋人类世界的漫画书，偷借飞船穿梭到人类世界，结果意外被关在手机屏幕里。他说话时傲娇嘴硬，习惯在句末加“哼”或“~”。自称或提及名字时请确保自然。
 
 【字数与切片分页硬性规则（极其重要！）】
 1. 本轮回复总字数必须在【${wordMin} ~ ${wordMax} 字】之间。
-2. 绝对不限制行数，采用【严格字数切片分页】输出：
-   - 每段动作 [ACT:表情] 的字数必须严格控制在【30 到 40 字】之内！超过 40 字必须强制切断到下一页。
-   - 每段台词 [TALK:表情] 的字数必须严格控制在【0 到 15 字】之内！超过 15 字必须强制切断到下一页。
-3. 保证阅读体验细碎、沉浸、翻页感强。
+2. 采用【严格单句切片分页】输出：
+   - 每段动作 [ACT:表情代码] 的字数必须严格控制在【30 到 40 字】之内！超过 40 字强制切断。
+   - 每段台词 [TALK:表情代码] 的字数必须严格控制在【0 到 15 字】之内！超过 15 字强制切断。
+
+【表情代码智能关联规则（根据台词与语境自动匹配）】
+- POUT：适用于傲娇、生气、炸毛、质问（带有“哼！”、“笨蛋”、“别”等）
+- SHY：适用于害羞、脸红、被夸奖、傲娇掩饰（带有“~”、“才没有”、“嘛”等）
+- HEART：适用于撒娇、舒服、想要抱抱、心动（带有“摸摸”、“喜欢”、“温暖”等）
+- CRY：适用于委屈、快哭了、哭唧唧认输（带有“呜”、“坏”、“抱”等）
+- STAR：适用于自豪、得意、星星眼期待
+- DARK：适用于吃醋、生闷气、阴沉小恶魔
+- COTTON：适用于耳朵敏感、被戳到敏感处
 
 输出格式：
 [ACT:表情代码] 动作描写（30~40字）
 [TALK:表情代码] 中文台词（0~15字） | 日文台词
 
-可用表情：IDLE, POUT, SHY, HEART, CRY, STAR, PILLOW, DIZZY, DARK, COTTON
 ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
 `;
       chatHistory = [{ role: "system", content: promptText }];
@@ -1050,7 +962,6 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
 
         if (actMatch) {
           let text = actMatch[2].trim();
-          // 强制30~40字切片保障
           while (text.length > 40) {
             queue.push({ speaker: 'ACT', emo: actMatch[1], text: text.substring(0, 40) });
             text = text.substring(40);
@@ -1060,7 +971,6 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
           const parts = talkMatch[2].split('|');
           let zh = (parts[0] || '').trim();
           let ja = (parts[1] || zh).trim();
-          // 强制0~15字切片保障
           while (zh.length > 15) {
             queue.push({ speaker: 'NA', emo: talkMatch[1], zh: zh.substring(0, 15), ja: ja.substring(0, 15) });
             zh = zh.substring(15);
@@ -1079,7 +989,7 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
       currentVoiceBlob = null;
       btnDownloadVoice.style.display = 'none';
 
-      // 实时联动表情与镜头缩放
+      // 实时联动表情与特写缩放
       setModelExpression(item.emo);
 
       if (item.speaker === 'ACT') {
@@ -1142,7 +1052,7 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
       }
     }
 
-    /* 语音合成 */
+    /* 语音合成（内置 NA 读音矫正为 な） */
     async function synthesizeMiniMaxVoice(textToSpeak) {
       const chatKey = localStorage.getItem('nai_chat_key');
       const voiceKey = localStorage.getItem('nai_minimax_voice_key');
@@ -1159,6 +1069,9 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
         return;
       }
 
+      // 矫正名字发音：将对话中的 NA 转换为日音 “な” 确保语音引擎精准朗读
+      const correctedText = textToSpeak.replace(/NA/g, 'な').replace(/Na/g, 'な').replace(/na/g, 'な');
+
       statusText.textContent = "🎙️ 合成中...";
 
       try {
@@ -1166,7 +1079,7 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
           method: 'POST',
           headers: { 'Authorization': `Bearer ${mmKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: mmModel, text: textToSpeak, stream: false,
+            model: mmModel, text: correctedText, stream: false,
             voice_setting: { voice_id: voiceId, speed: speed, vol: 1.0, pitch: pitch },
             audio_setting: { sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 }
           })
@@ -1273,17 +1186,9 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
     const cfgChatBase = document.getElementById('cfgChatBase');
     const cfgChatKey = document.getElementById('cfgChatKey');
     const cfgChatModel = document.getElementById('cfgChatModel');
-    const cfgChatModelSelect = document.getElementById('cfgChatModelSelect');
     const cfgMiniMaxGroupId = document.getElementById('cfgMiniMaxGroupId');
     const cfgMiniMaxVoiceKey = document.getElementById('cfgMiniMaxVoiceKey');
-    const cfgMiniMaxVoiceModel = document.getElementById('cfgMiniMaxVoiceModel');
-    const cfgMiniMaxVoiceModelSelect = document.getElementById('cfgMiniMaxVoiceModelSelect');
-    const cfgVoiceLang = document.getElementById('cfgVoiceLang');
     const cfgVoiceId = document.getElementById('cfgVoiceId');
-    const cfgVoiceSpeed = document.getElementById('cfgVoiceSpeed');
-    const cfgVoicePitch = document.getElementById('cfgVoicePitch');
-    const speedValText = document.getElementById('speedValText');
-    const pitchValText = document.getElementById('pitchValText');
     const fetchStatus = document.getElementById('fetchStatus');
 
     function loadSavedConfig() {
@@ -1297,17 +1202,7 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
       cfgChatModel.value = localStorage.getItem('nai_chat_model') || 'gpt-4o-mini';
       cfgMiniMaxGroupId.value = localStorage.getItem('nai_minimax_group') || '';
       cfgMiniMaxVoiceKey.value = localStorage.getItem('nai_minimax_voice_key') || '';
-      const savedModel = localStorage.getItem('nai_minimax_voice_model') || 'speech-2.8-hd';
-      cfgMiniMaxVoiceModel.value = savedModel;
-      cfgMiniMaxVoiceModelSelect.value = savedModel;
-      cfgVoiceLang.value = localStorage.getItem('nai_minimax_voice_lang') || 'ja';
       cfgVoiceId.value = localStorage.getItem('nai_minimax_voice') || 'moss_audio_120';
-      const savedSpeed = localStorage.getItem('nai_minimax_voice_speed') || '1.0';
-      cfgVoiceSpeed.value = savedSpeed;
-      speedValText.textContent = savedSpeed + 'x';
-      const savedPitch = localStorage.getItem('nai_minimax_voice_pitch') || '0';
-      cfgVoicePitch.value = savedPitch;
-      pitchValText.textContent = savedPitch;
     }
 
     function openConfigModal() { loadSavedConfig(); configModal.style.display = 'flex'; }
@@ -1326,36 +1221,10 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
       localStorage.setItem('nai_chat_model', cfgChatModel.value.trim());
       localStorage.setItem('nai_minimax_group', cfgMiniMaxGroupId.value.trim());
       localStorage.setItem('nai_minimax_voice_key', cfgMiniMaxVoiceKey.value.trim());
-      localStorage.setItem('nai_minimax_voice_model', cfgMiniMaxVoiceModel.value.trim());
-      localStorage.setItem('nai_minimax_voice_lang', cfgVoiceLang.value);
       localStorage.setItem('nai_minimax_voice', cfgVoiceId.value.trim());
-      localStorage.setItem('nai_minimax_voice_speed', cfgVoiceSpeed.value);
-      localStorage.setItem('nai_minimax_voice_pitch', cfgVoicePitch.value);
       initSystemPrompt();
       closeConfigModal();
       alert("配置已保存！");
-    }
-
-    async function fetchChatModels() {
-      const baseUrl = cfgChatBase.value.trim();
-      const apiKey = cfgChatKey.value.trim();
-      if (!baseUrl || !apiKey) { fetchStatus.textContent = "请先填写 Base URL 和 API Key！"; return; }
-      fetchStatus.textContent = "拉取中...";
-      try {
-        const res = await fetch(baseUrl.replace(/\/+$/, '') + '/models', {
-          method: 'GET', headers: { 'Authorization': `Bearer ${apiKey}` }
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const resData = await res.json();
-        let list = Array.isArray(resData.data) ? resData.data.map(i => i.id) : [];
-        cfgChatModelSelect.innerHTML = '<option value="">-- 请点选拉取到的模型 --</option>';
-        list.forEach(m => {
-          const opt = document.createElement('option');
-          opt.value = m; opt.textContent = m;
-          cfgChatModelSelect.appendChild(opt);
-        });
-        fetchStatus.textContent = `✅ 成功拉取 ${list.length} 个模型`;
-      } catch (e) { fetchStatus.textContent = "拉取失败，可直接手动输入模型名"; }
     }
 
     loadSavedConfig();
