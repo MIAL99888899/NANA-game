@@ -112,7 +112,6 @@
       cursor: pointer;
     }
 
-    /* 锁链锁定层 */
     .lock-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -400,7 +399,6 @@
   <div class="viewport">
     <div class="bg-decor"></div>
 
-    <!-- 锁定遮罩层 -->
     <div class="lock-overlay" id="lockOverlay">
       <div class="lock-icon">⛓️🔒</div>
       <div class="lock-text" id="lockTimerText">生气锁链锁定中... (5s)</div>
@@ -501,9 +499,6 @@
   </div>
 
   <script>
-    /* ============================================================
-     * 奈NA 专属原生管线引擎（呆毛常态摆动 + 触碰台词 + 符号表情联动）
-     * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
     let isSpeaking = false;
@@ -521,12 +516,10 @@
     let mouthTargetValue = 0;
     let mouthToggleTimer = 0;
 
-    // 触碰与连击计数
     let clickComboCount = 0;
     let comboResetTimer = null;
     let isLocked = false;
 
-    // 触碰台词预设库
     const TOUCH_DIALOGUES = {
       head: [
         { act: "（你伸手轻轻摸了摸奈粉色的水母头和头顶的心形呆毛，他浑身一颤，耳尖瞬间烧得通红）", talk: "喂！别随随便便摸我啊... ", emo: "SHY" },
@@ -888,7 +881,7 @@
 - CRY：适用于委屈、快哭了、哭唧唧认输（带有“呜”、“坏”、“抱”等）
 - STAR：适用于自豪、得意、星星眼期待
 - DARK：适用于吃醋、生闷气、阴沉小恶魔
-- COTTON：适用于耳朵敏感、被戳到敏感处
+- COTTON：适用于耳朵敏感, 被戳到敏感处
 
 输出格式：
 [ACT:表情代码] 动作描写（30~40字）
@@ -1174,17 +1167,17 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
     const fetchStatus = document.getElementById('fetchStatus');
 
     function loadSavedConfig() {
-      cfgPlayerName.value = localStorage.getItem('nai_player_name') || '';
-      cfgPlayerPersona.value = localStorage.getItem('nai_player_persona') || '普通人类';
-      cfgWordMin.value = localStorage.getItem('nai_word_min') || '350';
-      cfgWordMax.value = localStorage.getItem('nai_word_max') || '500';
-      cfgCustomStyle.value = localStorage.getItem('nai_custom_style') || '';
-      cfgChatBase.value = localStorage.getItem('nai_chat_base') || 'https://api.openai.com/v1';
-      cfgChatKey.value = localStorage.getItem('nai_chat_key') || '';
-      cfgChatModel.value = localStorage.getItem('nai_chat_model') || 'gpt-4o-mini';
-      cfgMiniMaxGroupId.value = localStorage.getItem('nai_minimax_group') || '';
-      cfgMiniMaxVoiceKey.value = localStorage.getItem('nai_minimax_voice_key') || '';
-      cfgVoiceId.value = localStorage.getItem('nai_minimax_voice') || 'moss_audio_120';
+      if (cfgPlayerName) cfgPlayerName.value = localStorage.getItem('nai_player_name') || '';
+      if (cfgPlayerPersona) cfgPlayerPersona.value = localStorage.getItem('nai_player_persona') || '普通人类';
+      if (cfgWordMin) cfgWordMin.value = localStorage.getItem('nai_word_min') || '350';
+      if (cfgWordMax) cfgWordMax.value = localStorage.getItem('nai_word_max') || '500';
+      if (cfgCustomStyle) cfgCustomStyle.value = localStorage.getItem('nai_custom_style') || '';
+      if (cfgChatBase) cfgChatBase.value = localStorage.getItem('nai_chat_base') || 'https://api.openai.com/v1';
+      if (cfgChatKey) cfgChatKey.value = localStorage.getItem('nai_chat_key') || '';
+      if (cfgChatModel) cfgChatModel.value = localStorage.getItem('nai_chat_model') || 'gpt-4o-mini';
+      if (cfgMiniMaxGroupId) cfgMiniMaxGroupId.value = localStorage.getItem('nai_minimax_group') || '';
+      if (cfgMiniMaxVoiceKey) cfgMiniMaxVoiceKey.value = localStorage.getItem('nai_minimax_voice_key') || '';
+      if (cfgVoiceId) cfgVoiceId.value = localStorage.getItem('nai_minimax_voice') || 'moss_audio_120';
     }
 
     function openConfigModal() { loadSavedConfig(); configModal.style.display = 'flex'; }
