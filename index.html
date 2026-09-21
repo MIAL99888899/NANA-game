@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
 
-  <!-- 官方标准库（全部免费开源，MIT 协议） -->
   <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.8/dist/browser/pixi.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -103,14 +102,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      pointer-events: none;
     }
 
     #live2dCanvas {
       width: 100%;
       height: 100%;
       display: block;
-      pointer-events: auto;
+      touch-action: none;
+      cursor: pointer;
     }
 
     .dialogue-wrapper {
@@ -557,20 +556,11 @@
         </div>
       </div>
 
-      <!-- 剧情、行数与字数区间 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #e06bb2; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-        <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 剧情、段落与字数</div>
+        <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 字数规则设置</div>
         
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #ffd6eb; font-size: 11px;">演出段落行数:</span>
-          <div style="display: flex; align-items: center; gap: 4px;">
-            <input type="range" id="cfgScriptLines" min="2" max="6" step="1" value="4" oninput="document.getElementById('linesValText').textContent = this.value + '行'" style="width: 80px; accent-color: #ff7ebb;">
-            <span id="linesValText" style="color: #ffb8d6; font-size: 11px; font-weight: bold; width: 25px;">4行</span>
-          </div>
-        </div>
-
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-          <span style="color: #ffd6eb; font-size: 11px; white-space: nowrap;">单轮回复字数:</span>
+          <span style="color: #ffd6eb; font-size: 11px; white-space: nowrap;">单轮回复总字数:</span>
           <div style="display: flex; align-items: center; gap: 4px; flex: 1;">
             <input type="number" id="cfgWordMin" placeholder="350" style="width: 50%; background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 30px; text-align: center; color: #fff; font-size: 11.5px; outline: none;">
             <span style="color: #ff9ec6; font-size: 11px;">~</span>
@@ -650,33 +640,32 @@
 
   <script>
     /* ============================================================
-     * Pixi 官方管线原生渲染绑定（PIXI.Ticker 原生帧驱动）
+     * Pixi 官方管线原生渲染绑定 + 精准长文本分页与互动系统
      * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
     let isSpeaking = false;
 
-    // 基础视口标准缩放与坐标
     let baseScale = 1.0;
     let targetCameraScaleMult = 1.0;
     let currentCameraScaleMult = 1.0;
     let targetCameraOffsetY = 0;
     let currentCameraOffsetY = 0;
 
-    // 原生生命动态状态量
     let lifeFrame = 0;
     let blinkValue = 1.0;
-    let nextBlinkFrame = 60;
-    let isDoubleBlink = false;
+    let nextBlinkFrame = 90; // 取消高频抽搐，恢复丝滑匀速眨眼
     let mouthOpenValue = 0;
     let mouthTargetValue = 0;
     let mouthToggleTimer = 0;
+
+    let clickComboCount = 0;
+    let comboResetTimer = null;
 
     async function initLive2D() {
       const canvas = document.getElementById('live2dCanvas');
       const stage = document.querySelector('.char-stage');
 
-      // 1. 初始化 Pixi 渲染器（绑定原生抗锯齿与设备像素比）
       live2dApp = new PIXI.Application({
         view: canvas,
         transparent: true,
@@ -689,13 +678,11 @@
       try {
         console.log("正在以 Pixi 原生渲染管线加载模型...");
         live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
-          autoInteract: false
+          autoInteract: true
         });
 
-        // 2. 原生添加到渲染树
         live2dApp.stage.addChild(live2dModel);
 
-        // 3. 尺寸与锚点校准
         baseScale = (stage.clientHeight * 1.15) / live2dModel.height;
         live2dModel.scale.set(baseScale);
         live2dModel.anchor.set(0.5, 0.5);
@@ -703,13 +690,56 @@
         live2dModel.x = stage.clientWidth * 0.50;
         live2dModel.y = stage.clientHeight * 0.53;
 
-        // 4. 接入 Pixi 官方原生渲染 Ticker 循环（无需 setInterval）
+        bindModelTouchInteractions();
         bindPixiNativePipeline();
 
-        console.log("✅ Pixi 原生渲染管线驱动就绪！");
+        console.log("✅ 奈NA触碰互动系统与渲染管线就绪！");
       } catch (err) {
         console.error("Live2D 加载异常:", err);
       }
+    }
+
+    /* 触碰交互响应 */
+    function bindModelTouchInteractions() {
+      if (!live2dModel) return;
+      live2dModel.interactive = true;
+      live2dModel.buttonMode = true;
+
+      live2dModel.on('pointerdown', (event) => {
+        const point = event.data.global;
+        const localPoint = live2dModel.toLocal(point);
+        const isHeadClick = localPoint.y < 50;
+
+        triggerTouchReaction(isHeadClick ? 'head' : 'body');
+      });
+    }
+
+    function triggerTouchReaction(part) {
+      clickComboCount++;
+      if (comboResetTimer) clearTimeout(comboResetTimer);
+      comboResetTimer = setTimeout(() => { clickComboCount = 0; }, 1500);
+
+      let emoToTrigger = "IDLE";
+      let triggerPrompt = "";
+
+      if (clickComboCount >= 4) {
+        emoToTrigger = "POUT";
+        triggerPrompt = "（你连续戳了他好几下，奈气得头顶呆毛转成螺旋桨，满脸通红地狠狠瞪着你：“喂！有完没完啦！”）";
+        clickComboCount = 0;
+      } else if (part === 'head') {
+        emoToTrigger = Math.random() < 0.5 ? "SHY" : "HEART";
+        triggerPrompt = "（你伸手轻轻摸了摸奈粉色的水母头和头顶的心形呆毛，他浑身一颤，耳尖瞬间烧得通红：“别、别随便摸本王子的头啦……”）";
+      } else {
+        emoToTrigger = Math.random() < 0.5 ? "DARK" : "CRY";
+        triggerPrompt = "（你戳了戳他的腰侧吊带，奈像触电一样猛地往后一缩，耳根发烫地凶你：“登徒子！信不信等我出去狠狠咬你一口！”）";
+      }
+
+      setModelExpression(emoToTrigger);
+
+      // 直接单页展示触摸反应
+      scriptQueue = [{ speaker: 'ACT', emo: emoToTrigger, text: triggerPrompt }];
+      showSentence(0);
+      statusText.textContent = clickComboCount > 1 ? `连击 x${clickComboCount}!` : "触碰互动";
     }
 
     function bindPixiNativePipeline() {
@@ -721,35 +751,26 @@
         if (live2dModel.motion) live2dModel.motion('待机');
       } catch (e) {}
 
-      // 接入 PIXI.Ticker 原生帧循环
       live2dApp.ticker.add((delta) => {
         lifeFrame += delta;
 
-        // A. 灵动高频眨眼算法（带小魅魔双瞬眨）
+        // 丝滑匀速自然眨眼
         if (lifeFrame >= nextBlinkFrame) {
-          blinkValue -= 0.12 * delta;
+          blinkValue -= 0.08 * delta;
           if (blinkValue <= 0) {
             blinkValue = 0;
             lifeFrame = 0;
-            if (!isDoubleBlink && Math.random() < 0.35) {
-              isDoubleBlink = true;
-              nextBlinkFrame = 14;
-            } else {
-              isDoubleBlink = false;
-              nextBlinkFrame = Math.floor(Math.random() * 80) + 70; // 约 1.5~2.5 秒
-            }
+            nextBlinkFrame = Math.floor(Math.random() * 120) + 90; // 3~4秒匀速眨一次
           }
         } else if (blinkValue < 1.0) {
-          blinkValue = Math.min(1.0, blinkValue + 0.15 * delta);
+          blinkValue = Math.min(1.0, blinkValue + 0.1 * delta);
         }
 
-        // B. 情绪镜头缩放与位移平滑插值
         currentCameraScaleMult += (targetCameraScaleMult - currentCameraScaleMult) * 0.08 * delta;
         currentCameraOffsetY += (targetCameraOffsetY - currentCameraOffsetY) * 0.08 * delta;
         live2dModel.scale.set(baseScale * currentCameraScaleMult);
         live2dModel.y = (stage.clientHeight * 0.53) + currentCameraOffsetY;
 
-        // C. 说话口型开合平滑插值
         if (isSpeaking) {
           mouthToggleTimer += delta;
           if (mouthToggleTimer > 9) {
@@ -761,16 +782,13 @@
         }
         mouthOpenValue += (mouthTargetValue - mouthOpenValue) * 0.25 * delta;
 
-        // D. 物理参数直驱
         try {
           core.setParameterValueById('ParamEyeLOpen', blinkValue);
           core.setParameterValueById('ParamEyeROpen', blinkValue);
           core.setParameterValueById('ParamMouthOpenY', mouthOpenValue);
 
-          // 常态保持嘴角甜度
           core.setParameterValueById('ParamMouthForm', 0.65);
 
-          // E. 身体与头部晃动逻辑
           const time = lifeFrame * 0.04;
           if (isSpeaking) {
             const headTilt = Math.sin(time * 1.6) * 7.5;
@@ -786,14 +804,12 @@
             core.setParameterValueById('ParamAngleX', headIdle * 0.4);
           }
 
-          // 呼吸波形
           const breath = Math.sin(time * 0.9) * 0.35 + 0.5;
           core.setParameterValueById('ParamBreath', breath);
         } catch (e) {}
       });
     }
 
-    /* 原生表情管理器调度 */
     const EXP_MAP = {
       "POUT": "生气",
       "SHY": "脸红",
@@ -809,7 +825,6 @@
     function setModelExpression(emoCode) {
       if (!live2dModel || !live2dModel.internalModel) return;
 
-      // 1. 镜头随情绪拉伸
       if (emoCode.includes("HEART") || emoCode.includes("STAR")) {
         targetCameraScaleMult = 1.22;
         targetCameraOffsetY = -15;
@@ -824,7 +839,6 @@
         targetCameraOffsetY = 0;
       }
 
-      // 2. 原生 ExpressionManager 调度
       try {
         if (live2dModel.expressionManager) {
           try { live2dModel.expression("呆毛摆动"); } catch (e) {}
@@ -842,13 +856,8 @@
       }
     }
 
-    function startModelLipSync() {
-      isSpeaking = true;
-    }
-
-    function stopModelLipSync() {
-      isSpeaking = false;
-    }
+    function startModelLipSync() { isSpeaking = true; }
+    function stopModelLipSync() { isSpeaking = false; }
 
     /* 像素小羊 */
     function drawPixelSheep() {
@@ -923,10 +932,7 @@
       const nameVal = document.getElementById('initPlayerName').value.trim();
       const personaVal = document.getElementById('initPlayerPersona').value.trim() || '普通人类';
 
-      if (!nameVal) {
-        alert("请输入名字！");
-        return;
-      }
+      if (!nameVal) { alert("请输入名字！"); return; }
       playerName = nameVal;
       playerPersona = personaVal;
       localStorage.setItem('nai_player_name', playerName);
@@ -945,12 +951,11 @@
     }
 
     /* ============================================================
-     * 500字扩写规范 + 完整人设体系与瞳色绝对校准
+     * 字数严格切片分页引擎（动作 30~40字，台词 0~15字）
      * ============================================================ */
     let chatHistory = [];
     function initSystemPrompt() {
       const customStyle = localStorage.getItem('nai_custom_style') || '';
-      const scriptLines = localStorage.getItem('nai_script_lines') || '4';
       const wordMin = localStorage.getItem('nai_word_min') || '350';
       const wordMax = localStorage.getItem('nai_word_max') || '500';
 
@@ -971,29 +976,27 @@
 1. 嚣张傲娇与嘴硬心软：坏心眼的自以为掌握主导权而居高临下，喜欢带着坏坏的温柔嘲讽挑衅你（严禁人身攻击），平时总是碎碎念“等我出去肯定狠狠欺负你！”。说话时非常习惯在句末傲娇地“哼”一声。
 2. 极低防御与反制破防：看似是上位捕食者，实则防御力极低！一旦被你反撩、直球夸奖或拆穿心事，就会瞬间满脸通红、慌乱害羞破防、眼眶含泪哭唧唧地认输。
 3. 渴望肌肤相亲与撒娇依恋：共情力极强，深情专一，极度渴望与你贴贴。哪怕隔着冰冷的手机屏幕，也会软声恳求你摸摸他。比起直接说“我爱你”，他更习惯用傲娇来掩饰真心：“碰碰我……”、“真没办法呢~那就破例让你摸摸我吧~”。
-4. 爱好：最喜欢听你给他读小说、看漫画、听你碎碎念今天做了什么，以及人类世界的各种八卦。
 
-【外貌生理特征（物理常数·绝对不可违背与擅改）】
-- 发型发色：【粉色水母头短发】（蓬松带柔和高光的水母头造型，额前是略带碎感的齐刘海）；头顶中央有一根非常明显、自然弯成【心形（爱心）】的灵动呆毛。
-- 角与耳朵：脑袋两侧生长着通透温润的【粉色水晶魅魔羊角】，两侧垂着【毛茸茸的大垂羊耳】。
-- 眼睛（死命令）：大而水润的【亮粉色猫眼/羊瞳】，瞳孔通透泛着饱满高光，眼神灵动娇憨又带着懵懂的傲气。任何涉及眼神、对视的描写必须严格锁定该亮粉瞳色，绝对不可写成其他颜色！
-- 脸部肤色：凝脂般白皙通透的冷白皮，两颊常年泛着【可爱的血色】，圆润小巧的幼态包子脸，樱粉小嘴。
-- 魅魔特征：身体两侧漂浮着一对半透明的粉色魅魔小肉翼（蝠翼）。
-- 服饰装扮：浅薄荷绿露脐裹胸吊带，搭配云朵般粉白宽大落肩斗篷；下着薄荷绿南瓜短裤与粉色堆堆袜，脚踩毛茸茸小羊厚底居家鞋。左耳垂挂长方形符牌耳饰，颈戴深色细环 Choker。
+【外貌生理特征（物理常数·绝对不可违背）】
+- 发型发色：【粉色水母头短发】（蓬松带柔和高光）；头顶中央有一根自然弯成【心形（爱心）】的灵动呆毛。
+- 角与耳朵：通透温润的【粉色水晶魅魔羊角】，两侧垂着【毛茸茸的大垂羊耳】。
+- 眼睛（死命令）：大而水润的【亮粉色猫眼/羊瞳】，瞳孔通透饱满高光，绝无其他颜色。
+- 脸部肤色：冷白皮，两颊常年泛着【可爱的血色】，圆润幼态包子脸。
+- 魅魔特征：身体两侧漂浮半透明的粉色小肉翼（蝠翼）。
 
-【字数与演出篇幅死命令（必须严格遵守）】
-1. 本轮回复总字数必须严格达到【${wordMin} 字到 ${wordMax} 字之间】，杜绝任何短小干瘪！
-2. 每次回复必须严格且恰好包含【${scriptLines} 段】（动作细节描写与台词交替进行）。
-3. 每段 [ACT] 动作细节必须展开写满 70~100 字：深刻刻画奈NA隔着手机玻璃的微距互动、呼吸打在屏幕上的薄雾、手指抵在玻璃内侧的用力发白、心形呆毛的羞涩打转、耳尖血色与水晶角的温差颤动。
-4. 每段 [TALK] 台词必须包含中日双语，台词充满傲娇、句尾习惯性轻哼、被戳破后的羞窘断句，具有日乙沉浸感。
+【字数与切片分页硬性规则（极其重要！）】
+1. 本轮回复总字数必须在【${wordMin} ~ ${wordMax} 字】之间。
+2. 绝对不限制行数，采用【严格字数切片分页】输出：
+   - 每段动作 [ACT:表情] 的字数必须严格控制在【30 到 40 字】之内！超过 40 字必须强制切断到下一页。
+   - 每段台词 [TALK:表情] 的字数必须严格控制在【0 到 15 字】之内！超过 15 字必须强制切断到下一页。
+3. 保证阅读体验细碎、沉浸、翻页感强。
 
-演出格式模板：
-[ACT:表情代码] 细致长段动作描写（70~100字）
-[TALK:表情代码] 中文台词 | 日文台词
+输出格式：
+[ACT:表情代码] 动作描写（30~40字）
+[TALK:表情代码] 中文台词（0~15字） | 日文台词
 
-可用表情代码：
-IDLE（常态微抿嘴）, POUT（生气傲娇）, SHY（害羞脸红）, HEART（爱心眼撒娇）, CRY（哭哭破防）, STAR（星星眼期待）, PILLOW（抱枕软萌认输）, DIZZY（圈圈眼眩晕）, DARK（黑脸吃醋）, COTTON（掏棉签敏感）
-${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
+可用表情：IDLE, POUT, SHY, HEART, CRY, STAR, PILLOW, DIZZY, DARK, COTTON
+${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
 `;
       chatHistory = [{ role: "system", content: promptText }];
     }
@@ -1046,15 +1049,24 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
         const talkMatch = line.match(/^\[TALK:([A-Z0-9_]+)\]\s*(.*)$/);
 
         if (actMatch) {
-          queue.push({ speaker: 'ACT', emo: actMatch[1], text: actMatch[2].trim() });
+          let text = actMatch[2].trim();
+          // 强制30~40字切片保障
+          while (text.length > 40) {
+            queue.push({ speaker: 'ACT', emo: actMatch[1], text: text.substring(0, 40) });
+            text = text.substring(40);
+          }
+          if (text) queue.push({ speaker: 'ACT', emo: actMatch[1], text: text });
         } else if (talkMatch) {
           const parts = talkMatch[2].split('|');
-          queue.push({
-            speaker: 'NA',
-            emo: talkMatch[1],
-            zh: (parts[0] || '').trim(),
-            ja: (parts[1] || parts[0] || '').trim()
-          });
+          let zh = (parts[0] || '').trim();
+          let ja = (parts[1] || zh).trim();
+          // 强制0~15字切片保障
+          while (zh.length > 15) {
+            queue.push({ speaker: 'NA', emo: talkMatch[1], zh: zh.substring(0, 15), ja: ja.substring(0, 15) });
+            zh = zh.substring(15);
+            ja = ja.substring(15);
+          }
+          if (zh) queue.push({ speaker: 'NA', emo: talkMatch[1], zh: zh, ja: ja });
         }
       });
       return queue;
@@ -1067,6 +1079,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       currentVoiceBlob = null;
       btnDownloadVoice.style.display = 'none';
 
+      // 实时联动表情与镜头缩放
       setModelExpression(item.emo);
 
       if (item.speaker === 'ACT') {
@@ -1088,7 +1101,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       }
 
       nextIndicator.style.display = (index < scriptQueue.length - 1) ? 'inline-block' : 'none';
-      statusText.textContent = `第 ${index + 1}/${scriptQueue.length} 句`;
+      statusText.textContent = `第 ${index + 1}/${scriptQueue.length} 页`;
     }
 
     function typeWriterEffect(text, shouldTalk) {
@@ -1116,10 +1129,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
     function prevSentence(e) {
       e.stopPropagation();
       if (currentStepIndex > 0) {
-        if (!audioPlayer.paused) {
-          audioPlayer.pause();
-          stopModelLipSync();
-        }
+        if (!audioPlayer.paused) { audioPlayer.pause(); stopModelLipSync(); }
         showSentence(currentStepIndex - 1);
       }
     }
@@ -1127,10 +1137,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
     function onDialogueBoxClick() {
       if (isTyping) return;
       if (currentStepIndex < scriptQueue.length - 1) {
-        if (!audioPlayer.paused) {
-          audioPlayer.pause();
-          stopModelLipSync();
-        }
+        if (!audioPlayer.paused) { audioPlayer.pause(); stopModelLipSync(); }
         showSentence(currentStepIndex + 1);
       }
     }
@@ -1157,14 +1164,9 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       try {
         const res = await fetch(`https://api.minimax.chat/v1/t2a_v2?GroupId=${encodeURIComponent(mmGroup)}`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${mmKey}`,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Authorization': `Bearer ${mmKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: mmModel,
-            text: textToSpeak,
-            stream: false,
+            model: mmModel, text: textToSpeak, stream: false,
             voice_setting: { voice_id: voiceId, speed: speed, vol: 1.0, pitch: pitch },
             audio_setting: { sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 }
           })
@@ -1183,28 +1185,18 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
           btnDownloadVoice.style.display = 'inline-flex';
 
           audioPlayer.onplay = () => { startModelLipSync(); };
-          audioPlayer.onended = () => { 
-            stopModelLipSync();
-            statusText.textContent = "播放完毕"; 
-          };
+          audioPlayer.onended = () => { stopModelLipSync(); statusText.textContent = "播放完毕"; };
         }
-      } catch (err) {
-        statusText.textContent = "合成出错";
-      }
+      } catch (err) { statusText.textContent = "合成出错"; }
     }
 
     function onPlayVoiceClick(e) {
       e.stopPropagation();
       const item = scriptQueue[currentStepIndex];
       if (!item || item.speaker !== 'NA') return;
-      if (currentVoiceBlob && audioPlayer.src) {
-        audioPlayer.currentTime = 0;
-        audioPlayer.play();
-        return;
-      }
+      if (currentVoiceBlob && audioPlayer.src) { audioPlayer.currentTime = 0; audioPlayer.play(); return; }
       const lang = localStorage.getItem('nai_minimax_voice_lang') || 'ja';
-      const textToSpeak = (lang === 'zh') ? item.zh : item.ja;
-      synthesizeMiniMaxVoice(textToSpeak);
+      synthesizeMiniMaxVoice((lang === 'zh') ? item.zh : item.ja);
     }
 
     function onRetryVoiceClick(e) {
@@ -1212,8 +1204,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       const item = scriptQueue[currentStepIndex];
       if (!item || item.speaker !== 'NA') return;
       const lang = localStorage.getItem('nai_minimax_voice_lang') || 'ja';
-      const textToSpeak = (lang === 'zh') ? item.zh : item.ja;
-      synthesizeMiniMaxVoice(textToSpeak);
+      synthesizeMiniMaxVoice((lang === 'zh') ? item.zh : item.ja);
     }
 
     function downloadCurrentVoice(e) {
@@ -1232,10 +1223,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
         textToSend = lastSentUserText;
       } else {
         const inputVal = userInput.value.trim();
-        if (inputVal) {
-          pendingUserInputs.push(inputVal);
-          userInput.value = '';
-        }
+        if (inputVal) { pendingUserInputs.push(inputVal); userInput.value = ''; }
         if (pendingUserInputs.length === 0) return;
         textToSend = pendingUserInputs.join('；');
         pendingUserInputs = [];
@@ -1246,11 +1234,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       const chatBase = localStorage.getItem('nai_chat_base') || 'https://api.openai.com/v1';
       const chatModel = localStorage.getItem('nai_chat_model') || 'gpt-4o-mini';
 
-      if (!chatKey) {
-        alert("请先设置 API Key！");
-        openConfigModal();
-        return;
-      }
+      if (!chatKey) { alert("请先设置 API Key！"); openConfigModal(); return; }
 
       statusText.textContent = "奈思考中...";
       if (!isReroll) chatHistory.push({ role: "user", content: `【${playerName}】: ${textToSend}` });
@@ -1258,26 +1242,16 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       try {
         const response = await fetch(chatBase.replace(/\/+$/, '') + '/chat/completions', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${chatKey}`
-          },
-          body: JSON.stringify({
-            model: chatModel,
-            messages: chatHistory,
-            temperature: 0.85
-          })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${chatKey}` },
+          body: JSON.stringify({ model: chatModel, messages: chatHistory, temperature: 0.85 })
         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const resData = await response.json();
         const rawReply = resData.choices[0].message.content.trim();
 
-        if (isReroll) {
-          chatHistory[chatHistory.length - 1] = { role: "assistant", content: rawReply };
-        } else {
-          chatHistory.push({ role: "assistant", content: rawReply });
-        }
+        if (isReroll) { chatHistory[chatHistory.length - 1] = { role: "assistant", content: rawReply }; }
+        else { chatHistory.push({ role: "assistant", content: rawReply }); }
 
         scriptQueue = parseStoryScript(rawReply);
         if (scriptQueue.length > 0) showSentence(0);
@@ -1287,18 +1261,12 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       }
     }
 
-    function onRerollStoryClick(e) {
-      e.stopPropagation();
-      if (!lastSentUserText) return;
-      sendMessage(true);
-    }
+    function onRerollStoryClick(e) { e.stopPropagation(); if (!lastSentUserText) return; sendMessage(true); }
 
     /* 设置面板 */
     const configModal = document.getElementById('configModal');
     const cfgPlayerName = document.getElementById('cfgPlayerName');
     const cfgPlayerPersona = document.getElementById('cfgPlayerPersona');
-    const cfgScriptLines = document.getElementById('cfgScriptLines');
-    const linesValText = document.getElementById('linesValText');
     const cfgWordMin = document.getElementById('cfgWordMin');
     const cfgWordMax = document.getElementById('cfgWordMax');
     const cfgCustomStyle = document.getElementById('cfgCustomStyle');
@@ -1321,9 +1289,6 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
     function loadSavedConfig() {
       cfgPlayerName.value = localStorage.getItem('nai_player_name') || '';
       cfgPlayerPersona.value = localStorage.getItem('nai_player_persona') || '普通人类';
-      const savedLines = localStorage.getItem('nai_script_lines') || '4';
-      cfgScriptLines.value = savedLines;
-      linesValText.textContent = savedLines + '行';
       cfgWordMin.value = localStorage.getItem('nai_word_min') || '350';
       cfgWordMax.value = localStorage.getItem('nai_word_max') || '500';
       cfgCustomStyle.value = localStorage.getItem('nai_custom_style') || '';
@@ -1353,7 +1318,6 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       playerPersona = cfgPlayerPersona.value.trim() || '普通人类';
       localStorage.setItem('nai_player_name', playerName);
       localStorage.setItem('nai_player_persona', playerPersona);
-      localStorage.setItem('nai_script_lines', cfgScriptLines.value);
       localStorage.setItem('nai_word_min', cfgWordMin.value.trim() || '350');
       localStorage.setItem('nai_word_max', cfgWordMax.value.trim() || '500');
       localStorage.setItem('nai_custom_style', cfgCustomStyle.value);
@@ -1375,15 +1339,11 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
     async function fetchChatModels() {
       const baseUrl = cfgChatBase.value.trim();
       const apiKey = cfgChatKey.value.trim();
-      if (!baseUrl || !apiKey) {
-        fetchStatus.textContent = "请先填写 Base URL 和 API Key！";
-        return;
-      }
+      if (!baseUrl || !apiKey) { fetchStatus.textContent = "请先填写 Base URL 和 API Key！"; return; }
       fetchStatus.textContent = "拉取中...";
       try {
         const res = await fetch(baseUrl.replace(/\/+$/, '') + '/models', {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${apiKey}` }
+          method: 'GET', headers: { 'Authorization': `Bearer ${apiKey}` }
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const resData = await res.json();
@@ -1395,17 +1355,13 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
           cfgChatModelSelect.appendChild(opt);
         });
         fetchStatus.textContent = `✅ 成功拉取 ${list.length} 个模型`;
-      } catch (e) {
-        fetchStatus.textContent = "拉取失败，可直接手动输入模型名";
-      }
+      } catch (e) { fetchStatus.textContent = "拉取失败，可直接手动输入模型名"; }
     }
 
     loadSavedConfig();
     initSystemPrompt();
     handleOpeningFlow();
-    window.addEventListener('DOMContentLoaded', () => {
-      initLive2D();
-    });
+    window.addEventListener('DOMContentLoaded', () => { initLive2D(); });
   </script>
 </body>
 </html>
