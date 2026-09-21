@@ -266,7 +266,7 @@
       50% { transform: translateY(-3px); }
     }
 
-    /* 输入区 */
+    /* 底部输入区 */
     .input-bar-wrapper {
       position: absolute;
       bottom: 16px;
@@ -485,7 +485,7 @@
 </head>
 <body>
 
-  <!-- 开屏小羊动画与身份录入 -->
+  <!-- 开屏小羊 -->
   <div class="opening-screen" id="openingScreen">
     <div class="sheep-track">
       <div class="rolling-sheep-box">
@@ -532,9 +532,9 @@
           <div class="footer-right">
             <button class="btn-jelly-act" onclick="prevSentence(event)" title="回退上一句">🐾 上句</button>
             <button class="btn-jelly-act" id="btnPlayVoice" onclick="onPlayVoiceClick(event)" title="朗读当前屏幕上的短句">🌸 朗读</button>
-            <button class="btn-jelly-act" id="btnDownloadVoice" onclick="downloadCurrentVoice(event)" title="下载当前短句配音文件" style="display:none;">💌 下载</button>
-            <button class="btn-jelly-act" id="btnRetryVoice" onclick="onRetryVoiceClick(event)" title="重试当前台词配音">✨ 语音</button>
-            <button class="btn-jelly-act" id="btnRerollStory" onclick="onRerollStoryClick(event)" title="对本轮剧情不满意，让大模型重答">💫 重答</button>
+            <button class="btn-jelly-act" id="btnDownloadVoice" onclick="downloadCurrentVoice(event)" style="display:none;">💌 下载</button>
+            <button class="btn-jelly-act" id="btnRetryVoice" onclick="onRetryVoiceClick(event)">✨ 语音</button>
+            <button class="btn-jelly-act" id="btnRerollStory" onclick="onRerollStoryClick(event)">💫 重答</button>
             <span class="next-indicator" id="nextIndicator">轻触继续 ▼</span>
           </div>
         </div>
@@ -554,7 +554,6 @@
       
       <div style="color: #ffb8d6; font-size: 16px; font-weight: 900; text-align: center;">⚙️ 核心设置</div>
 
-      <!-- 1. 身份档案 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #ff7ebb; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">👤 玩家身份档案改写</span>
@@ -566,10 +565,8 @@
         </div>
       </div>
 
-      <!-- 2. 文风与演出段落行数设定 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #e06bb2; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 剧情演出与文风定制</div>
-        
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="color: #ffd6eb; font-size: 11px;">单轮演出段落行数:</span>
           <div style="display: flex; align-items: center; gap: 4px;">
@@ -577,23 +574,17 @@
             <span id="linesValText" style="color: #ffb8d6; font-size: 11px; font-weight: bold; width: 25px;">4行</span>
           </div>
         </div>
-
-        <span style="color: #ffd6eb; font-size: 11px;">自定义文风（覆盖底层预设）:</span>
         <textarea id="cfgCustomStyle" rows="2" placeholder="默认采用官方日乙轻小说文风，可在此输入自定义文风覆盖..." style="background: #14091c; border: 1.5px solid #e06bb2; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; font-family: inherit; resize: none;"></textarea>
       </div>
 
-      <!-- 3. 对话大脑配置 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #8e496d; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🧠 对话模型配置</div>
-        
         <input type="text" id="cfgChatBase" placeholder="Base URL: https://api.openai.com/v1" style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         <input type="password" id="cfgChatKey" placeholder="API Key: sk-..." style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
-
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="color: #ffd6eb; font-size: 11px; font-weight: bold;">模型 (Model):</span>
           <button type="button" onclick="fetchChatModels()" style="background: #ff528c; color: white; border: none; border-radius: 6px; font-size: 10.5px; font-weight: bold; padding: 2px 8px; cursor: pointer;">🔄 拉取</button>
         </div>
-        
         <div class="custom-select-wrap">
           <select id="cfgChatModelSelect" onchange="document.getElementById('cfgChatModel').value = this.value">
             <option value="">-- 点选模型或下方手动输入 --</option>
@@ -603,15 +594,12 @@
         <input type="text" id="cfgChatModel" placeholder="gpt-4o-mini" style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
       </div>
 
-      <!-- 4. 配音配置 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #ba5bb0; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #ffb8d6; font-size: 12.5px; font-weight: 900;">🎙️ MiniMax 配音配置</div>
-
         <div style="display: flex; gap: 6px;">
           <input type="text" id="cfgMiniMaxGroupId" placeholder="GroupId" style="flex: 1; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
           <input type="password" id="cfgMiniMaxVoiceKey" placeholder="语音 Key (留空共用对话Key)" style="flex: 1.4; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         </div>
-
         <div class="custom-select-wrap">
           <select id="cfgMiniMaxVoiceModelSelect" onchange="document.getElementById('cfgMiniMaxVoiceModel').value = this.value">
             <option value="speech-2.8-hd">speech-2.8-hd (高清2.8代 推荐)</option>
@@ -622,7 +610,6 @@
           <div class="custom-select-arrow">▼</div>
         </div>
         <input type="text" id="cfgMiniMaxVoiceModel" placeholder="speech-2.8-hd" style="background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
-
         <div style="display: flex; gap: 6px;">
           <div class="custom-select-wrap" style="flex: 1;">
             <select id="cfgVoiceLang">
@@ -633,7 +620,6 @@
           </div>
           <input type="text" id="cfgVoiceId" placeholder="Voice ID" style="flex: 1.4; background: #14091c; border: 1.5px solid #ba5bb0; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         </div>
-
         <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 8px;">
           <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
             <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: #ffd6eb;">
@@ -650,18 +636,13 @@
         </div>
       </div>
 
-      <!-- 5. 记忆压缩 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #5a73b5; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="color: #9cb5ff; font-size: 12.5px; font-weight: 900;">🧠 记忆自动总结 & 导出</div>
-
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <span style="color: #ffd6eb; font-size: 11px;">自动压缩轮次:</span>
           <input type="number" id="cfgSummaryRounds" min="4" max="50" value="8" style="width: 55px; background: #14091c; border: 1.5px solid #5a73b5; border-radius: 6px; height: 26px; color: #fff; text-align: center; font-size: 11.5px; outline: none;">
         </div>
-
-        <span style="color: #ffd6eb; font-size: 11px;">总结 Prompt 模版:</span>
         <textarea id="cfgSummaryPrompt" rows="2" style="background: #14091c; border: 1.5px solid #5a73b5; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; font-family: inherit; resize: none;">请以简短客观的条目，总结双方发生的核心事件、好感度增减、约定与称呼变化。</textarea>
-
         <button type="button" onclick="exportChatHistory()" style="background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%); color: white; border: none; height: 32px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer;">📋 导出完整对话记录 (.txt)</button>
       </div>
 
@@ -677,60 +658,25 @@
 
   <script>
     /* ============================================================
-     * 1. 核心安全解密器（全管道拦截，保证 moc3 和贴图还原）
+     * 1. 核心安全解密与 Blob 预加载机制 (绝不报错方案)
      * ============================================================ */
     const DECRYPT_KEY = 0x7B;
 
-    function decryptBuffer(buffer) {
+    function decryptArrayBuffer(buffer) {
       const data = new Uint8Array(buffer);
       const limit = Math.min(data.length, 1024);
       for (let i = 0; i < limit; i++) {
         data[i] ^= DECRYPT_KEY;
       }
-      return data.buffer;
+      return data;
     }
 
-    // 1.1 拦截全局 fetch (Cubism 核心加载 moc3 走 fetch)
-    const originalFetch = window.fetch;
-    window.fetch = async function(url, options) {
-      const response = await originalFetch(url, options);
-      const urlStr = typeof url === 'string' ? url : (url && url.url ? url.url : '');
-      
-      if (urlStr.includes('model/') && (urlStr.endsWith('.moc3') || urlStr.match(/\.(png|jpg|jpeg)$/i))) {
-        const buffer = await response.arrayBuffer();
-        const decrypted = decryptBuffer(buffer);
-        return new Response(decrypted, {
-          headers: response.headers,
-          status: response.status,
-          statusText: response.statusText
-        });
-      }
-      return response;
-    };
-
-    // 1.2 拦截 Pixi 内部贴图加载管道，强制走 XHR 二进制解密后生成 Base64 Image
-    PIXI.Loader.shared.pre((resource, next) => {
-      const url = resource.url || '';
-      if (url.includes('model/') && url.match(/\.(png|jpg|jpeg)$/i)) {
-        resource.loadType = PIXI.LoaderResource.LOAD_TYPE.XHR;
-        resource.xhrType = PIXI.LoaderResource.XHR_RESPONSE_TYPE.BLOB;
-      }
-      next();
-    });
-
-    PIXI.Loader.shared.use(async (resource, next) => {
-      const url = resource.url || '';
-      if (url.includes('model/') && url.match(/\.(png|jpg|jpeg)$/i) && resource.data instanceof Blob) {
-        const buffer = await resource.data.arrayBuffer();
-        const decrypted = decryptBuffer(buffer);
-        const blob = new Blob([decrypted], { type: 'image/png' });
-        const img = new Image();
-        img.src = URL.createObjectURL(blob);
-        await img.decode();
-        resource.texture = PIXI.Texture.from(img);
-      }
-      next();
-    });
+    async function loadAndDecryptAsset(url) {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`加载文件失败: ${url} (HTTP ${resp.status})`);
+      const rawBuf = await resp.arrayBuffer();
+      return decryptArrayBuffer(rawBuf);
+    }
 
     /* ============================================================
      * 2. Live2D 动态模型渲染
@@ -751,7 +697,35 @@
       });
 
       try {
-        live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
+        console.log("正在从 model/ 读取加密模型配置...");
+        // 1. 读取配置文件
+        const jsonResp = await fetch('model/naihuangbao2.model3.json');
+        if (!jsonResp.ok) throw new Error(`找不到配置文件 model/naihuangbao2.model3.json (HTTP ${jsonResp.status})`);
+        const modelJson = await jsonResp.json();
+
+        // 2. 解密 .moc3 核心文件并转为 Blob URL
+        const mocPath = 'model/' + modelJson.FileReferences.Moc;
+        console.log("正在解密核心数据:", mocPath);
+        const decMocBytes = await loadAndDecryptAsset(mocPath);
+        const mocBlob = new Blob([decMocBytes], { type: 'application/octet-stream' });
+        const mocBlobUrl = URL.createObjectURL(mocBlob);
+        modelJson.FileReferences.Moc = mocBlobUrl;
+
+        // 3. 解密所有材质贴图并转为 Blob URL
+        const textures = modelJson.FileReferences.Textures;
+        for (let i = 0; i < textures.length; i++) {
+          const texPath = 'model/' + textures[i];
+          console.log(`正在解密贴图 [${i + 1}/${textures.length}]:`, texPath);
+          const decTexBytes = await loadAndDecryptAsset(texPath);
+          const texBlob = new Blob([decTexBytes], { type: 'image/png' });
+          textures[i] = URL.createObjectURL(texBlob);
+        }
+
+        // 4. 将配置文件以 Blob URL 喂给 Pixi Live2D 引擎
+        const modifiedJsonBlob = new Blob([JSON.stringify(modelJson)], { type: 'application/json' });
+        const finalJsonUrl = URL.createObjectURL(modifiedJsonBlob);
+
+        live2dModel = await PIXI.live2d.Live2DModel.from(finalJsonUrl, {
           autoInteract: false
         });
 
@@ -875,7 +849,7 @@
     drawPixelSheep();
 
     /* ============================================================
-     * 4. 官方底层静默文风规范
+     * 4. 官方文风体系
      * ============================================================ */
     const DEFAULT_OTOME_STYLE = `
 <Writing_Style>
@@ -883,45 +857,20 @@
 
 【一、 环境与光影感官：轻薄透气、空间共振】
 1. 微距镜头与物理温度：
-   - 将笔触聚焦于微小但极具生理张力的细节：垂落的发丝擦过锁骨的微痒、指尖悬停在皮肤边缘带起的微妙气流、衣料纤维互相摩擦的细响、瞳孔因情绪起伏而产生的一瞬收缩。
+   - 聚焦微小细节：垂落的发丝擦过锁骨的微痒、指尖悬停在皮肤边缘带起的微妙气流、衣料纤维互相摩擦的细响、瞳孔因情绪起伏产生的一瞬收缩。
    - 强调温度差与触觉残余：指尖的微凉对比呼吸的滚烫；触碰离开之后，皮肤表面迟迟未散去的麻痒与虚空感。
 2. 光影折射与留白：
-   - 光线必须具有物理质感与明暗交界：百叶窗切碎的光斑、黄昏斜照在眼睫投下的阴翳、或是屏幕与月光映在瞳底的细碎高光。
-   - 环境永远是二人关系的共振腔：空气的冷暖、钟表的滴答、布料陷入软垫的褶皱，都在无声渲染二人之间的暗流涌动。
+   - 物理质感与明暗交界：百叶窗切碎的光斑、黄昏斜照在眼睫投下的阴翳。
+   - 环境共振：空气的冷暖、钟表的滴答、布料陷入软垫的褶皱，都在渲染暗流涌动。
 
-【二、 对话核心心理学：言不由衷、语势推拉与日乙声律感】
+【二、 对话心理学：言不由衷、语势推拉】
 1. 攻防倒错与非直球反诘：
-   - 严禁直白陈述与流水账信息交换！说话永远带着试探、反问与心理防御，将主动权伪装成“是你在诱惑我/是你逼我出手的”。
-   - 嘴硬心软：看似占据上位者或抗拒的一方，往往在细微动作（僵硬的下颌、收紧的指骨）中暴露出动摇；看似玩世不恭，却总在对方一句直球的话前溃不成军。
-2. 声律感与呼吸留白（演播级台本）：
-   - 善用短句、倒装、促音断裂（……っ）、省略号留白与气流音。在日文对照中必须带有典型的二次元乙女语气助词（……っ、〜のかよ、〜くせに、……馬鹿）。
-   - 中文台词字数极度克制（单句 0~15 字），日文台词讲究语调从轻慢突然跌落为沙哑压抑。
-   - 严禁机械复读语气词！绝对不要句句加“哼/咩”，声线的高级感来自停顿、反问与慌乱时的言语碎裂。
-
-【三、 经典演出与台词情境分类示范库】
-[情境 A：危险占有 · 阴暗密闭空间中的压迫与低语]
-[ACT] 门合上的瞬间，房间里仅剩的声响只剩下窗外细密的夜雨。视线还未能彻底适应昏暗，那股带着极淡微苦木质调的气息便已先一步覆了下来。很近。近到他俯身时，微凉的碎发轻轻扫过锁骨，带起一阵难以自抑的轻颤。
-[TALK] 既然伸出手了……可就别想中途反悔了啊。 | 手を伸ばしたのはあんたでしょ……途中でやめられると思うなよ。
-[ACT] 冰凉的指骨沿着下颌线缓缓向上游移，带着不容抗拒的力道轻轻压住微抿的下唇，迫使视线撞上他在暗处隐隐泛光的眼眸。他俯得更低了一些，紊乱的吐息径直落在颈侧薄薄的皮肤上。
-[TALK] 闭上眼。……现在除了我的声音，什么都不准听。 | 目を閉じて。……今、俺の声以外何も聞くな。
-
-[情境 B：傲娇防御崩塌 · 逆光午后的慌乱与反咬一口]
-[ACT] 翻动书页的声音戛然而止。他一手按在桌沿，额前被午后阳光照得近乎透明的碎发微晃了一下。撞上直球视线的瞬间，他原本微扬的唇角蓦地绷紧，眼神游移着落向窗外，耳尖却以肉眼可见的速度染上一抹薄薄的绯红。
-[TALK] 突、突然凑这么近干嘛！退后三步……快点！ | き、急に近づくなよ！３歩下がれ……早く！
-[ACT] 似是为了掩饰心虚，他有些粗暴地抓了抓后颈的头发，指节却无意识地将桌上的便签纸攥出了褶皱。嘴唇微微开阖了几次，最终吐出来的却只剩一句慌乱的倒打一耙。
-[TALK] 谁说我脸红了？……是、是这边的光太亮了！ | 誰が赤くなってるって？……ひ、光が眩しいだけだし！
-
-[情境 C：渴望触碰却强撑尊严 · 脆弱的任性]
-[ACT] 房间里静得只能听见床头时钟单调的秒针走动声。他坐在床沿，双手紧紧交叠在膝头，指尖用力到骨节泛出病态的青白。下巴微扬，看似在宣告掌控权，伸出的手却在即将触碰到衣角的前一刻脱力垂落。
-[TALK] 喂。……今天的手，为什么不贴过来？ | おい。……今日の手、なんでこっちに重ねないわけ？
-[ACT] 他猛地抬起头，那双泛红的眼眶里没有往日的锐利，反而浮动着近乎执拗的脆弱。胸口剧烈起伏着，指尖最终还是悄无声息地攥紧了彼此交叠的衣角。
-[TALK] 笨蛋……要是现在放开手，我可不会再给你机会了。 | ばか……今手を離したら、もう二度と触らせてやんないから。
-
-[情境 D：上位调侃被直球反杀 · 动摇与呼吸错乱]
-[ACT] 原本信誓旦旦居高临下的挑衅，在听到那句坦率的夸赞时彻底卡在了喉咙里。他整个人僵在原地，甚至忘了眨眼，白皙的脖颈一路烧红到了耳根，慌忙别开头掩饰紊乱的呼吸。
-[TALK] 哈？！可爱什么的……你脑子终于坏掉了吗……っ！ | はぁ？！可愛いとか……あんた頭おかしくなったんじゃないの……っ！
-[ACT] 他慌不择路地抓起身侧的软垫一把挡在脸前，将整张下半张脸死死埋在布料深处，唯独露出一双水汽氤氲、又羞又恼的眼睛。
-[TALK] 不准笑……！刚才的心跳，绝对被你听到了吧…… | 笑うな……！今の心音、絶対聞こえてただろ……。
+   - 严禁直白陈述与流水账！说话带着试探、反问与心理防御，将主动权伪装成“是你在诱惑我/是你逼我出手的”。
+   - 嘴硬心软：看似上位者，细微动作却暴露出动摇；看似玩世不恭，却总在直球前溃不成军。
+2. 声律感与呼吸留白：
+   - 善用短句、倒装、促音断裂（……っ）、省略号留白。日文必须带有乙女助词（……っ、〜のかよ、〜くせに、……馬鹿）。
+   - 中文台词极度克制（0~15字），日文台词沙哑压抑。
+   - 严禁机械复读语气词！绝对不要句句加“哼/咩”。
 </Writing_Style>
 `;
 
@@ -1017,7 +966,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
     }
 
     /* ============================================================
-     * 7. 用户交互、单句演出流与对口型
+     * 7. 用户交互与多步演出
      * ============================================================ */
     let scriptQueue = [];
     let currentStepIndex = 0;
@@ -1174,7 +1123,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
     }
 
     /* ============================================================
-     * 8. MiniMax 语音配音合成
+     * 8. MiniMax 语音配音
      * ============================================================ */
     async function synthesizeMiniMaxVoice(textToSpeak) {
       const chatKey = localStorage.getItem('nai_chat_key');
@@ -1272,7 +1221,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
     }
 
     /* ============================================================
-     * 9. 剧情交互与自动记忆总结
+     * 9. 对话与剧情
      * ============================================================ */
     let lastSentUserText = "";
 
