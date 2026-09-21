@@ -725,7 +725,7 @@
         const modifiedJsonBlob = new Blob([JSON.stringify(modelJson)], { type: 'application/json' });
         const finalJsonUrl = URL.createObjectURL(modifiedJsonBlob);
 
-        live2dModel = await PIXI.live2d.Live2DModel.from(finalJsonUrl, {
+        live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
           autoInteract: false
         });
 
