@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>奈的手机禁闭日常</title>
+  <title>奈NA的手机禁闭日常</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -500,7 +500,7 @@
     <div class="bg-decor"></div>
 
     <div class="top-header">
-      <span class="header-title" id="headerTitle">✨ Live2D · 奈的动态空间</span>
+      <span class="header-title" id="headerTitle">✨ Live2D · 奈NA的动态空间</span>
       <button class="btn-config" onclick="openConfigModal()">⚙️ 设置</button>
     </div>
 
@@ -519,7 +519,7 @@
         </div>
         <div class="dialogue-footer">
           <div class="footer-left">
-            <span class="footer-tag" id="footerTag">NAI'S DIALOGUE</span>
+            <span class="footer-tag" id="footerTag">NA'S DIALOGUE</span>
             <span class="footer-status" id="statusText">等待回应...</span>
           </div>
           <div class="footer-right">
@@ -638,12 +638,20 @@
 
   <script>
     /* ============================================================
-     * 黄金比例 + 高清抗锯齿 + 灵动眨眼与常态微抿嘴笑
+     * 黄金比例 + 高清抗锯齿 + 高频灵动眨眼 + 情绪镜头缩放与摇晃
      * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
     let mouthParamTimer = null;
     let idleAnimTimer = null;
+    let isSpeaking = false;
+
+    // 基础视口标准缩放与坐标
+    let baseScale = 1.0;
+    let targetCameraScaleMult = 1.0;  // 情绪镜头放大乘数
+    let currentCameraScaleMult = 1.0;
+    let targetCameraOffsetY = 0;      // 情绪镜头垂直偏移
+    let currentCameraOffsetY = 0;
 
     async function initLive2D() {
       const canvas = document.getElementById('live2dCanvas');
@@ -659,26 +667,23 @@
       });
 
       try {
-        console.log("正在以黄金比例载入模型...");
+        console.log("正在载入奈NA模型并挂载灵动系统...");
         live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
           autoInteract: false
         });
 
         live2dApp.stage.addChild(live2dModel);
 
-        // 饱满全身特写比例：高度为视口的 1.33 倍（等同于 133dvh）
-        const targetScale = (stage.clientHeight * 1.33) / live2dModel.height;
-        live2dModel.scale.set(targetScale);
+        // 基准尺寸（视口的 1.15 倍）
+        baseScale = (stage.clientHeight * 1.15) / live2dModel.height;
+        live2dModel.scale.set(baseScale);
         live2dModel.anchor.set(0.5, 0.5);
 
-        // 水平居中微偏右（52%），垂直大幅上提避开对话框遮挡（42%）
-        live2dModel.x = stage.clientWidth * 0.52;
-        live2dModel.y = stage.clientHeight * 0.42;
+        live2dModel.x = stage.clientWidth * 0.50;
+        live2dModel.y = stage.clientHeight * 0.53;
 
-        // 启动灵动生命循环
         initCharacterLife();
-
-        console.log("✅ Live2D 动态模型黄金比例加载成功！");
+        console.log("✅ Live2D 动态系统就绪！");
       } catch (err) {
         console.error("Live2D 加载异常:", err);
       }
@@ -687,6 +692,7 @@
     function initCharacterLife() {
       if (!live2dModel || !live2dModel.internalModel || !live2dModel.internalModel.coreModel) return;
       const core = live2dModel.internalModel.coreModel;
+      const stage = document.querySelector('.char-stage');
 
       try {
         if (live2dModel.motion) live2dModel.motion('待机');
@@ -694,38 +700,70 @@
 
       let frame = 0;
       let blinkVal = 1.0;
-      let nextBlinkTime = 100;
+      let nextBlinkTime = 45; // 大幅提升眨眼频率：1.5~2.5秒一次
+      let isDoubleBlink = false; // 双瞬眨标记
 
       if (idleAnimTimer) clearInterval(idleAnimTimer);
       idleAnimTimer = setInterval(() => {
         frame++;
 
-        // 随机眨眼
+        // 1. 高频自然灵动眨眼（带小动物式双瞬眨）
         if (frame >= nextBlinkTime) {
-          blinkVal -= 0.25;
+          blinkVal -= 0.35;
           if (blinkVal <= 0) {
             blinkVal = 0;
             frame = 0;
-            nextBlinkTime = Math.floor(Math.random() * 120) + 80;
+            if (!isDoubleBlink && Math.random() < 0.35) {
+              // 35% 几率触发紧接着的第二次快速萌感眨眼
+              isDoubleBlink = true;
+              nextBlinkTime = 12;
+            } else {
+              isDoubleBlink = false;
+              nextBlinkTime = Math.floor(Math.random() * 45) + 35; // 1~2.5秒
+            }
           }
         } else if (blinkVal < 1.0) {
-          blinkVal = Math.min(1.0, blinkVal + 0.35);
+          blinkVal = Math.min(1.0, blinkVal + 0.4);
         }
+
+        // 2. 镜头平滑动态缩放（随情绪缩放特写）
+        currentCameraScaleMult += (targetCameraScaleMult - currentCameraScaleMult) * 0.08;
+        currentCameraOffsetY += (targetCameraOffsetY - currentCameraOffsetY) * 0.08;
+        live2dModel.scale.set(baseScale * currentCameraScaleMult);
+        live2dModel.y = (stage.clientHeight * 0.53) + currentCameraOffsetY;
 
         try {
           core.setParameterValueById('ParamEyeLOpen', blinkVal);
           core.setParameterValueById('ParamEyeROpen', blinkVal);
 
-          // 常态保持嘴角微微上扬微笑，拒绝呆滞死板
+          // 保持嘴角甜度
           core.setParameterValueById('ParamMouthForm', 0.65);
 
-          // 身体柔和呼吸浮动
-          const breath = Math.sin(frame * 0.05) * 0.35 + 0.5;
+          // 3. 身体与头部晃动逻辑
+          if (isSpeaking) {
+            // 说话期间：生动娇憨地左右偏头晃脑、重心律动
+            const headTilt = Math.sin(frame * 0.08) * 7.5;
+            const bodyTilt = Math.sin(frame * 0.08) * 3.2;
+            core.setParameterValueById('ParamAngleZ', headTilt);
+            core.setParameterValueById('ParamBodyAngleZ', bodyTilt);
+            core.setParameterValueById('ParamAngleX', Math.cos(frame * 0.08) * 4.5);
+          } else {
+            // 平时待机：轻柔呼吸慢摇
+            const headIdle = Math.sin(frame * 0.035) * 2.2;
+            const bodyIdle = Math.sin(frame * 0.035) * 1.2;
+            core.setParameterValueById('ParamAngleZ', headIdle);
+            core.setParameterValueById('ParamBodyAngleZ', bodyIdle);
+            core.setParameterValueById('ParamAngleX', headIdle * 0.4);
+          }
+
+          // 呼吸参数
+          const breath = Math.sin(frame * 0.04) * 0.35 + 0.5;
           core.setParameterValueById('ParamBreath', breath);
         } catch (e) {}
       }, 30);
     }
 
+    /* 情绪联动与动态镜头缩放 */
     const EXP_MAP = {
       "POUT": "生气",
       "SHY": "脸红",
@@ -734,29 +772,57 @@
       "STAR": "星星眼",
       "PILLOW": "抱枕",
       "DIZZY": "圈圈眼",
-      "DARK": "黑脸"
+      "DARK": "黑脸",
+      "COTTON": "棉花棒"
     };
 
     function setModelExpression(emoCode) {
       if (!live2dModel || !live2dModel.internalModel) return;
-      let expName = "";
-      for (const key in EXP_MAP) {
-        if (emoCode.includes(key)) {
-          expName = EXP_MAP[key];
-          break;
-        }
+
+      // 1. 动态镜头随情绪缩放与沉浮
+      if (emoCode.includes("HEART") || emoCode.includes("STAR")) {
+        // 撒娇/心动/开心：镜头拉近特写（贴近屏幕感）
+        targetCameraScaleMult = 1.22;
+        targetCameraOffsetY = -15;
+      } else if (emoCode.includes("SHY") || emoCode.includes("DARK") || emoCode.includes("POUT")) {
+        // 害羞破防/吃醋/后退：镜头稍缩远一点避开视线
+        targetCameraScaleMult = 1.04;
+        targetCameraOffsetY = 10;
+      } else if (emoCode.includes("CRY") || emoCode.includes("PILLOW")) {
+        // 委屈抱枕/哭哭认输：高度微降下沉
+        targetCameraScaleMult = 1.10;
+        targetCameraOffsetY = 20;
+      } else {
+        // 默认常态比例
+        targetCameraScaleMult = 1.0;
+        targetCameraOffsetY = 0;
       }
+
+      // 2. 表情部件联动叠加
       try {
-        if (expName && live2dModel.expressionManager) {
-          live2dModel.expression(expName);
+        if (live2dModel.expressionManager) {
+          // 常驻待机呆毛摆动
+          try { live2dModel.expression("呆毛摆动"); } catch (e) {}
+
+          for (const key in EXP_MAP) {
+            if (emoCode.includes(key)) {
+              live2dModel.expression(EXP_MAP[key]);
+            }
+          }
+
+          // 概率触发爱心眼（在开心/舒服/心动时）
+          if (emoCode.includes("HEART") && Math.random() < 0.4) {
+            live2dModel.expression("爱心眼");
+          }
         }
       } catch (e) {
-        console.warn("表情设置异常:", e);
+        console.warn("表情联动异常:", e);
       }
     }
 
     function startModelLipSync() {
       stopModelLipSync();
+      isSpeaking = true;
       let toggle = false;
       mouthParamTimer = setInterval(() => {
         if (live2dModel && live2dModel.internalModel && live2dModel.internalModel.coreModel) {
@@ -764,10 +830,11 @@
           live2dModel.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', val);
           toggle = !toggle;
         }
-      }, 160);
+      }, 150);
     }
 
     function stopModelLipSync() {
+      isSpeaking = false;
       if (mouthParamTimer) {
         clearInterval(mouthParamTimer);
         mouthParamTimer = null;
@@ -872,7 +939,7 @@
     }
 
     /* ============================================================
-     * 完整人设体系与瞳色校准
+     * 完整人设体系与精确外观锁定（奈NA）
      * ============================================================ */
     let chatHistory = [];
     function initSystemPrompt() {
@@ -880,17 +947,17 @@
       const scriptLines = localStorage.getItem('nai_script_lines') || '4';
 
       const promptText = `
-【核心人设档案：奈（Nai）】
-姓名：奈（Nai）
+【核心人设档案：奈（NA）】
+姓名：奈（英文/读音固定写作 NA，绝非 Nai）
 性别：男
-目前状态：被关在手机屏幕里的小魅魔王子
+目前状态：被关在手机屏幕里的小魅魔王子大人
 年龄：250岁
 性向：双性恋（男/女皆可）
 昵称：小羊、王子大人
 对话对象：${playerName || '你'}（身份设定：${playerPersona || '普通人类'}）
 
 【背景故事】
-奈原本是魅魔小羊星球的王子大人，因迷恋人类世界的漫画书，偷借了大臣还没做好的宇宙飞船穿梭到人类世界，结果意外被关在手机屏幕里。他一心想让你放他出去，却在朝夕相处中彻底爱上了你，变得极度离不开你。你的手机就是他整个世界的全部，每天最开心的时刻就是你点开他。
+奈（NA）原本是魅魔小羊星球的王子大人，因迷恋人类世界的漫画书，偷借了大臣还没做好的宇宙飞船穿梭到人类世界，结果意外被关在手机屏幕里。他一心想让你放他出去，却在朝夕相处中彻底爱上了你，变得极度离不开你。你的手机就是他整个世界的全部，每天最开心的时刻就是你点开他。
 
 【性格特质与语言习惯】
 1. 嚣张傲娇与嘴硬心软：坏心眼的自以为掌握主导权而居高临下，喜欢带着坏坏的温柔嘲讽挑衅你（严禁人身攻击），平时总是碎碎念“等我出去肯定狠狠欺负你！”。说话时非常习惯在句末傲娇地“哼”一声。
@@ -898,11 +965,12 @@
 3. 渴望肌肤相亲与撒娇依恋：共情力极强，深情专一，极度渴望与你贴贴。哪怕隔着冰冷的手机屏幕，也会软声恳求你摸摸他。比起直接说“我爱你”，他更习惯用傲娇来掩饰真心：“碰碰我……”、“真没办法呢~那就破例让你摸摸我吧~”。
 4. 爱好：最喜欢听你给他读小说、看漫画、听你碎碎念今天做了什么，以及人类世界的各种八卦。
 
-【外貌生理特征（物理常数·严格遵守绝对不可违背）】
-- 眼睛（重点）：大而水润的【亮粉色猫眼/羊瞳】，瞳孔通透泛着饱满高光，眼神灵动娇憨又带着懵懂的傲气。涉及对视、眼神微表情描写时，严禁出现任何其他瞳色！
-- 发型发色：通透带柔和高光的【草莓牛奶粉色】波波头短发，微带碎感的齐刘海；头顶中央有一根非常明显、自然弯成【心形（爱心）】的灵动呆毛。
-- 脸部肤色：凝脂般白皙通透的冷白皮，两颊常年泛着微粉血色，圆润小巧的幼态包子脸，樱粉小嘴。
-- 魅魔特征：脑袋两侧垂着毛茸茸的大垂耳与内弯的粉紫色魅魔羊角，身体两侧漂浮着一对半透明的粉色魅魔小肉翼（蝠翼）。
+【外貌生理特征（物理常数·绝对不可违背与擅改）】
+- 发型发色：【粉色水母头短发】（蓬松带柔和高光的水母头造型，额前是略带碎感的齐刘海）；头顶中央有一根非常明显、自然弯成【心形（爱心）】的灵动呆毛。
+- 角与耳朵：脑袋两侧生长着通透温润的【粉色水晶魅魔羊角】，两侧垂着【毛茸茸的大垂羊耳】。
+- 眼睛（死命令）：大而水润的【亮粉色猫眼/羊瞳】，瞳孔通透泛着饱满高光，眼神灵动娇憨又带着懵懂的傲气。任何涉及眼神、对视的描写必须严格锁定该亮粉瞳色，绝对不可写成其他颜色！
+- 脸部肤色：凝脂般白皙通透的冷白皮，两颊常年泛着【可爱的血色】，圆润小巧的幼态包子脸，樱粉小嘴。
+- 魅魔特征：身体两侧漂浮着一对半透明的粉色魅魔小肉翼（蝠翼）。
 - 服饰装扮：浅薄荷绿露脐裹胸吊带，搭配云朵般粉白宽大落肩斗篷；下着薄荷绿南瓜短裤与粉色堆堆袜，脚踩毛茸茸小羊厚底居家鞋。左耳垂挂长方形符牌耳饰，颈戴深色细环 Choker。
 
 【段落行数与演出格式死命令】
@@ -911,7 +979,7 @@
 [TALK:表情代码] 中文台词（0~15字以内） | 日文台词（原汁原味日乙口吻，善用促音、省略号留白）
 
 可用表情代码：
-IDLE（常态微抿嘴）, POUT（生气傲娇）, SHY（害羞脸红）, HEART（爱心眼）, CRY（哭哭破防）, STAR（星星眼期待）, PILLOW（抱枕软萌）, DIZZY（圈圈眼晕厥）, DARK（黑脸吃醋）
+IDLE（常态微抿嘴）, POUT（生气傲娇）, SHY（害羞脸红）, HEART（爱心眼撒娇）, CRY（哭哭破防）, STAR（星星眼期待）, PILLOW（抱枕软萌认输）, DIZZY（圈圈眼眩晕）, DARK（黑脸吃醋）, COTTON（掏棉签敏感）
 ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
 `;
       chatHistory = [{ role: "system", content: promptText }];
@@ -969,7 +1037,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
         } else if (talkMatch) {
           const parts = talkMatch[2].split('|');
           queue.push({
-            speaker: 'NAI',
+            speaker: 'NA',
             emo: talkMatch[1],
             zh: (parts[0] || '').trim(),
             ja: (parts[1] || parts[0] || '').trim()
@@ -1115,7 +1183,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
     function onPlayVoiceClick(e) {
       e.stopPropagation();
       const item = scriptQueue[currentStepIndex];
-      if (!item || item.speaker !== 'NAI') return;
+      if (!item || item.speaker !== 'NA') return;
       if (currentVoiceBlob && audioPlayer.src) {
         audioPlayer.currentTime = 0;
         audioPlayer.play();
@@ -1129,7 +1197,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
     function onRetryVoiceClick(e) {
       e.stopPropagation();
       const item = scriptQueue[currentStepIndex];
-      if (!item || item.speaker !== 'NAI') return;
+      if (!item || item.speaker !== 'NA') return;
       const lang = localStorage.getItem('nai_minimax_voice_lang') || 'ja';
       const textToSpeak = (lang === 'zh') ? item.zh : item.ja;
       synthesizeMiniMaxVoice(textToSpeak);
@@ -1140,7 +1208,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       if (!currentVoiceBlob) return;
       const a = document.createElement('a');
       a.href = URL.createObjectURL(currentVoiceBlob);
-      a.download = `奈_${Date.now()}.mp3`;
+      a.download = `奈NA_${Date.now()}.mp3`;
       a.click();
     }
 
