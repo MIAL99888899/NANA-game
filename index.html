@@ -644,40 +644,42 @@
     let live2dModel = null;
     let mouthParamTimer = null;
 
-    async function initLive2D() {
+async function initLive2D() {
       const canvas = document.getElementById('live2dCanvas');
       const stage = document.querySelector('.char-stage');
 
+      // 开启视网膜超清分辨率抗锯齿
       live2dApp = new PIXI.Application({
         view: canvas,
         transparent: true,
         autoDensity: true,
+        antialias: true,
+        resolution: Math.max(window.devicePixelRatio || 1, 2),
         resizeTo: stage
       });
 
       try {
-        console.log("正在以官方纯净模式加载模型...");
+        console.log("正在以高清模式加载模型...");
         live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
           autoInteract: false
         });
 
         live2dApp.stage.addChild(live2dModel);
 
-        const scaleX = (stage.clientWidth * 0.95) / live2dModel.width;
-        const scaleY = (stage.clientHeight * 0.95) / live2dModel.height;
-        const finalScale = Math.min(scaleX, scaleY);
-
-        live2dModel.scale.set(finalScale);
+        // 放大倍率：改用宽度为主的饱满胸像特写，不再缩成全身小人
+        const targetScale = (stage.clientWidth * 1.5) / live2dModel.width;
+        live2dModel.scale.set(targetScale);
         live2dModel.anchor.set(0.5, 0.5);
-        live2dModel.x = stage.clientWidth / 2;
-        live2dModel.y = stage.clientHeight / 2 + 30;
 
-        console.log("✅ Live2D 动态模型渲染成功！");
+        // 水平居中，垂直稍微下沉，让头部和胸部刚好落在屏幕黄金视觉区
+        live2dModel.x = stage.clientWidth / 2;
+        live2dModel.y = stage.clientHeight * 0.55;
+
+        console.log("✅ Live2D 动态模型高清渲染成功！");
       } catch (err) {
         console.error("Live2D 加载异常:", err);
       }
     }
-
     const EXP_MAP = {
       "POUT": "生气",
       "SHY": "脸红",
