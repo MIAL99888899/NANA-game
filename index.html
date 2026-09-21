@@ -112,6 +112,7 @@
       cursor: pointer;
     }
 
+    /* 锁链锁定层 */
     .lock-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -306,7 +307,6 @@
       font-weight: 900;
       outline: none;
       user-select: text;
-      -webkit-user-select: text;
       font-family: inherit;
     }
     .chat-input::placeholder {
@@ -499,6 +499,9 @@
   </div>
 
   <script>
+    /* ============================================================
+     * 奈NA 专属原生管线引擎（中文表情文件名精准映射驱动）
+     * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
     let isSpeaking = false;
@@ -520,26 +523,27 @@
     let comboResetTimer = null;
     let isLocked = false;
 
+    // 你精心设计的触摸台词与表情联动库（完整实装）
     const TOUCH_DIALOGUES = {
       head: [
-        { act: "（你伸手轻轻摸了摸奈粉色的水母头和头顶的心形呆毛，他浑身一颤，耳尖瞬间烧得通红）", talk: "喂！别随随便便摸我啊... ", emo: "SHY" },
-        { act: "（你顺着他的头发轻柔地梳理，奈原本想要推开的手慢慢垂了下来，水润的猫眼里泛起光亮）", talk: "但是...你的手好温暖~", emo: "HEART" },
-        { act: "（你捏了捏他毛茸茸的大垂羊耳，奈头顶的心形呆毛瞬间旋转起来，整个人羞恼得直跺脚）", talk: "嗯~我才没有很舒服呢~", emo: "HEART" },
-        { act: "（你作势要收回手，奈却下意识地把脑袋往你手指的方向又凑近了一分）", talk: "喂！干嘛随随便便打算停下不摸我了...", emo: "POUT" }
+        { act: "（你伸手轻轻摸了摸奈粉色的水母头和头顶的心形呆毛，他浑身一颤，耳尖瞬间烧得通红）", talk: "喂！别随随便便摸我啊... ", emo: "脸红" },
+        { act: "（你顺着他的头发轻柔地梳理，奈原本想要推开的手慢慢垂了下来，水润的猫眼里泛起光亮）", talk: "但是...你的手好温暖~", emo: "爱心眼" },
+        { act: "（你捏了捏他毛茸茸的大垂羊耳，奈头顶的心形呆毛瞬间旋转起来，整个人羞恼得直跺脚）", talk: "嗯~我才没有很舒服呢~", emo: "呆毛旋转" },
+        { act: "（你作势要收回手，奈却下意识地把脑袋往你手指的方向又凑近了一分）", talk: "喂！干嘛随随便便打算停下不摸我了...", emo: "生气" }
       ],
       horn: [
-        { act: "（你轻轻碰了碰他脑袋两侧通透的粉色水晶羊角，奈立刻挺起小胸脯，一脸骄傲地扬起下巴）", talk: "哈哈！你们人类没有吧~这可是本王子最引以为傲地角哦~", emo: "STAR" },
-        { act: "（你好奇地多抚摸了两下水晶角，奈狐疑地盯着你，眼神里满是警惕与嫌弃）", talk: "什么? 你还要摸吗？你洗手了吧....", emo: "DARK" },
-        { act: "（你假装要认真擦手再摸，奈红着脸小声嘟囔，眼神飘忽不定）", talk: "...只摸一下的话...好...好吧...", emo: "SHY" }
+        { act: "（你轻轻碰了碰他脑袋两侧通透的粉色水晶羊角，奈立刻挺起小胸脯，一脸骄傲地扬起下巴）", talk: "哈哈！你们人类没有吧~这可是本王子最引以为傲地角哦~", emo: "星星眼" },
+        { act: "（你好奇地多抚摸了两下水晶角，奈狐疑地盯着你，眼神里满是警惕与嫌弃）", talk: "什么? 你还要摸吗？你洗手了吧....", emo: "黑脸" },
+        { act: "（你假装要认真擦手再摸，奈红着脸小声嘟囔，眼神飘忽不定）", talk: "...只摸一下的话...好...好吧...", emo: "脸红" }
       ],
       body: [
-        { act: "（你轻轻戳了戳他薄荷绿裹胸吊带的边缘，奈像触电一样猛地往后一弹，满脸通红地捂住胸口）", talk: "不可以！绝对不可以！你怎么能随随便便....碰...那里...", emo: "POUT" },
-        { act: "（你又坏笑着戳了一下，奈急得眼眶泛泪，呆毛转成螺旋桨，小手在身前疯狂挥舞）", talk: "我都说了...不行...不要这样啦....", emo: "CRY" },
-        { act: "（你顺势用指尖轻轻环住他的腰侧，奈瞬间卸下所有防备，身体软绵绵地靠过来，顺势抱住抱枕）", talk: "很...很舒服哦~多摸摸我吧...", emo: "HEART" },
-        { act: "（你想要抽回手，奈却急得眼泪在眼眶里打转，带着哭腔死死抱住抱枕不放）", talk: "诶！？让...让我说请让你摸...这...这种事...别走...请摸摸我~~", emo: "CRY" }
+        { act: "（你轻轻戳了戳他薄荷绿裹胸吊带的边缘，奈像触电一样猛地往后一弹，满脸通红地捂住胸口）", talk: "不可以！绝对不可以！你怎么能随随便便....碰...那里...", emo: "生气" },
+        { act: "（你又坏笑着戳了一下，奈急得眼眶泛泪，呆毛转成螺旋桨，小手在身前疯狂挥舞）", talk: "我都说了...不行...不要这样啦....", emo: "哭哭" },
+        { act: "（你顺势用指尖轻轻环住他的腰侧，奈瞬间卸下所有防备，身体软绵绵地靠过来，顺势抱住抱枕）", talk: "很...很舒服哦~多摸摸我吧...", emo: "抱枕" },
+        { act: "（你想要抽回手，奈却急得眼泪在眼眶里打转，带着哭腔死死抱住抱枕不放）", talk: "诶！？让...让我说请让你摸...这...这种事...别走...请摸摸我~~", emo: "哭哭" }
       ],
       combo10: [
-        { act: "（你连续疯狂戳了他 10 下，奈气得精致的小脸涨得通红，头顶心形呆毛彻底气成旋转风车）", talk: "哼！我绝——对不会理你了！", emo: "POUT" }
+        { act: "（你连续疯狂戳了他 10 下，奈气得精致的小脸涨得通红，头顶心形呆毛彻底气成旋转风车）", talk: "哼！我绝——对不会理你了！", emo: "生气" }
       ]
     };
 
@@ -571,6 +575,7 @@
         live2dModel.x = stage.clientWidth * 0.50;
         live2dModel.y = stage.clientHeight * 0.53;
 
+        // 常驻激活呆毛摆动
         try { live2dModel.expression("呆毛摆动"); } catch(e){}
 
         bindModelTouchInteractions();
@@ -645,7 +650,7 @@
           clearInterval(lockInterval);
           isLocked = false;
           overlay.classList.remove('show');
-          setModelExpression("IDLE");
+          setModelExpression("呆毛摆动");
         }
       }, 1000);
     }
@@ -716,28 +721,18 @@
       });
     }
 
-    const EXP_MAP = {
-      "POUT": "生气",
-      "SHY": "脸红",
-      "HEART": "爱心眼",
-      "CRY": "哭哭",
-      "STAR": "星星眼",
-      "PILLOW": "抱枕",
-      "DIZZY": "圈圈眼",
-      "DARK": "黑脸",
-      "COTTON": "棉花棒"
-    };
-
-    function setModelExpression(emoCode) {
+    /* 核心修复：直接通过中文表情文件名驱动模型表情 */
+    function setModelExpression(emoName) {
       if (!live2dModel || !live2dModel.internalModel) return;
 
-      if (emoCode.includes("HEART") || emoCode.includes("STAR")) {
+      // 1. 贴屏半身特写镜头缩放判定
+      if (emoName.includes("爱心眼") || emoName.includes("星星眼") || emoName.includes("抱枕")) {
         targetCameraScaleMult = 1.30;
         targetCameraOffsetY = -20;
-      } else if (emoCode.includes("SHY") || emoCode.includes("DARK") || emoCode.includes("POUT")) {
+      } else if (emoName.includes("脸红") || emoName.includes("黑脸") || emoName.includes("生气")) {
         targetCameraScaleMult = 1.05;
         targetCameraOffsetY = 10;
-      } else if (emoCode.includes("CRY") || emoCode.includes("PILLOW")) {
+      } else if (emoName.includes("哭哭")) {
         targetCameraScaleMult = 1.15;
         targetCameraOffsetY = 15;
       } else {
@@ -745,17 +740,15 @@
         targetCameraOffsetY = 0;
       }
 
+      // 2. 直接调用对应的中文表情文件名
       try {
-        if (live2dModel.expressionManager) {
-          try { live2dModel.expression("呆毛摆动"); } catch (e) {}
-          for (const key in EXP_MAP) {
-            if (emoCode.includes(key)) {
-              live2dModel.expression(EXP_MAP[key]);
-            }
-          }
+        if (live2dModel.expression) {
+          live2dModel.expression(emoName);
+        } else if (live2dModel.expressionManager) {
+          live2dModel.expressionManager.setExpression(emoName);
         }
       } catch (e) {
-        console.warn("表情调度异常:", e);
+        console.warn("表情加载异常:", emoName, e);
       }
     }
 
@@ -871,21 +864,15 @@
 【字数与切片分页硬性规则（极其重要！）】
 1. 本轮回复总字数必须在【${wordMin} ~ ${wordMax} 字】之间。
 2. 采用【严格单句切片分页】输出：
-   - 每段动作 [ACT:表情代码] 的字数必须严格控制在【30 到 40 字】之内！超过 40 字强制切断。
-   - 每段台词 [TALK:表情代码] 的字数必须严格控制在【0 到 15 字】之内！超过 15 字强制切断。
+   - 每段动作 [ACT:中文表情名] 的字数必须严格控制在【30 到 40 字】之内！超过 40 字强制切断。
+   - 每段台词 [TALK:中文表情名] 的字数必须严格控制在【0 到 15 字】之内！超过 15 字强制切断。
 
-【表情代码智能关联规则（根据台词与语境自动匹配）】
-- POUT：适用于傲娇、生气、炸毛、质问（带有“哼！”、“笨蛋”、“别”等）
-- SHY：适用于害羞、脸红、被夸奖、傲娇掩饰（带有“~”、“才没有”、“嘛”等）
-- HEART：适用于撒娇、舒服、想要抱抱、心动（带有“摸摸”、“喜欢”、“温暖”等）
-- CRY：适用于委屈、快哭了、哭唧唧认输（带有“呜”、“坏”、“抱”等）
-- STAR：适用于自豪、得意、星星眼期待
-- DARK：适用于吃醋、生闷气、阴沉小恶魔
-- COTTON：适用于耳朵敏感, 被戳到敏感处
+【可用表情名（严格对应根目录 .exp3.json 文件名，请直接调用）：】
+生气, 脸红, 爱心眼, 哭哭, 星星眼, 抱枕, 圈圈眼, 黑脸, 棉花棒, 面纹, 呆毛摆动, 呆毛旋转
 
 输出格式：
-[ACT:表情代码] 动作描写（30~40字）
-[TALK:表情代码] 中文台词（0~15字） | 日文台词
+[ACT:表情文件名] 动作描写（30~40字）
+[TALK:表情文件名] 中文台词（0~15字） | 日文台词
 
 ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
 `;
@@ -936,26 +923,28 @@ ${customStyle ? `\n【补充文风】\n${customStyle}` : ''}
       const queue = [];
 
       lines.forEach(line => {
-        const actMatch = line.match(/^\[ACT:([A-Z0-9_]+)\]\s*(.*)$/);
-        const talkMatch = line.match(/^\[TALK:([A-Z0-9_]+)\]\s*(.*)$/);
+        const actMatch = line.match(/^\[ACT:(.*?)\]\s*(.*)$/);
+        const talkMatch = line.match(/^\[TALK:(.*?)\]\s*(.*)$/);
 
         if (actMatch) {
+          let emo = actMatch[1].trim();
           let text = actMatch[2].trim();
           while (text.length > 40) {
-            queue.push({ speaker: 'ACT', emo: actMatch[1], text: text.substring(0, 40) });
+            queue.push({ speaker: 'ACT', emo: emo, text: text.substring(0, 40) });
             text = text.substring(40);
           }
-          if (text) queue.push({ speaker: 'ACT', emo: actMatch[1], text: text });
+          if (text) queue.push({ speaker: 'ACT', emo: emo, text: text });
         } else if (talkMatch) {
+          let emo = talkMatch[1].trim();
           const parts = talkMatch[2].split('|');
           let zh = (parts[0] || '').trim();
           let ja = (parts[1] || zh).trim();
           while (zh.length > 15) {
-            queue.push({ speaker: 'NA', emo: talkMatch[1], zh: zh.substring(0, 15), ja: ja.substring(0, 15) });
+            queue.push({ speaker: 'NA', emo: emo, zh: zh.substring(0, 15), ja: ja.substring(0, 15) });
             zh = zh.substring(15);
             ja = ja.substring(15);
           }
-          if (zh) queue.push({ speaker: 'NA', emo: talkMatch[1], zh: zh, ja: ja });
+          if (zh) queue.push({ speaker: 'NA', emo: emo, zh: zh, ja: ja });
         }
       });
       return queue;
