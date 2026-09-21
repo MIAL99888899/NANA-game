@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
 
-  <!-- Live2D Cubism Core 及 Pixi 渲染引擎驱动 -->
+  <!-- 官方标准库（无任何拦截与修改） -->
   <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.8/dist/browser/pixi.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -92,7 +92,6 @@
       transform: scale(0.92);
     }
 
-    /* Live2D 画布容器 */
     .char-stage {
       position: absolute;
       top: 0;
@@ -114,7 +113,6 @@
       pointer-events: auto;
     }
 
-    /* 果冻对话框容器 */
     .dialogue-wrapper {
       position: absolute;
       bottom: 82px;
@@ -266,7 +264,6 @@
       50% { transform: translateY(-3px); }
     }
 
-    /* 底部输入区 */
     .input-bar-wrapper {
       position: absolute;
       bottom: 16px;
@@ -321,7 +318,6 @@
       transform: scale(0.94);
     }
 
-    /* 开屏小羊 */
     .opening-screen {
       position: fixed;
       top: 0;
@@ -485,7 +481,6 @@
 </head>
 <body>
 
-  <!-- 开屏小羊 -->
   <div class="opening-screen" id="openingScreen">
     <div class="sheep-track">
       <div class="rolling-sheep-box">
@@ -509,12 +504,10 @@
       <button class="btn-config" onclick="openConfigModal()">⚙️ 设置</button>
     </div>
 
-    <!-- Live2D 画布 -->
     <div class="char-stage">
       <canvas id="live2dCanvas"></canvas>
     </div>
 
-    <!-- 果冻对话框 -->
     <div class="dialogue-wrapper">
       <div class="char-name-badge" id="nameBadge">
         <span class="badge-icon">💖</span>
@@ -531,7 +524,7 @@
           </div>
           <div class="footer-right">
             <button class="btn-jelly-act" onclick="prevSentence(event)" title="回退上一句">🐾 上句</button>
-            <button class="btn-jelly-act" id="btnPlayVoice" onclick="onPlayVoiceClick(event)" title="朗读当前屏幕上的短句">🌸 朗读</button>
+            <button class="btn-jelly-act" id="btnPlayVoice" onclick="onPlayVoiceClick(event)" title="朗读当前短句">🌸 朗读</button>
             <button class="btn-jelly-act" id="btnDownloadVoice" onclick="downloadCurrentVoice(event)" style="display:none;">💌 下载</button>
             <button class="btn-jelly-act" id="btnRetryVoice" onclick="onRetryVoiceClick(event)">✨ 语音</button>
             <button class="btn-jelly-act" id="btnRerollStory" onclick="onRerollStoryClick(event)">💫 重答</button>
@@ -541,22 +534,21 @@
       </div>
     </div>
 
-    <!-- 底部输入栏 -->
     <div class="input-bar-wrapper">
       <input type="text" id="userInput" class="chat-input" placeholder="输入一句话，按回车放入对话框..." onkeydown="handleInputKeyDown(event)">
       <button class="btn-send" onclick="sendMessage()">发送</button>
     </div>
   </div>
 
-  <!-- ⚙️ 设置弹窗 -->
-  <div id="configModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: none; align-items: center; justify-content: center; pointer-events: auto;">
-    <div style="width: 92%; max-width: 420px; max-height: 90vh; overflow-y: auto; background: #231430; border: 3px solid #ff9ec6; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; font-family: sans-serif;">
+  <!-- 设置弹窗 -->
+  <div id="configModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: none; align-items: center; justify-content: center;">
+    <div style="width: 92%; max-width: 420px; max-height: 90vh; overflow-y: auto; background: #231430; border: 3px solid #ff9ec6; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
       
       <div style="color: #ffb8d6; font-size: 16px; font-weight: 900; text-align: center;">⚙️ 核心设置</div>
 
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #ff7ebb; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">👤 玩家身份档案改写</span>
+          <span style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">👤 玩家身份</span>
           <button type="button" onclick="resetOpeningProfile()" style="background: #ba5bb0; color: #fff; border: none; border-radius: 6px; font-size: 10px; font-weight: bold; padding: 2px 6px; cursor: pointer;">✨ 重置开屏身份</button>
         </div>
         <div style="display: flex; gap: 6px;">
@@ -566,7 +558,7 @@
       </div>
 
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #e06bb2; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-        <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 剧情演出与文风定制</div>
+        <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 剧情与文风</div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="color: #ffd6eb; font-size: 11px;">单轮演出段落行数:</span>
           <div style="display: flex; align-items: center; gap: 4px;">
@@ -574,7 +566,7 @@
             <span id="linesValText" style="color: #ffb8d6; font-size: 11px; font-weight: bold; width: 25px;">4行</span>
           </div>
         </div>
-        <textarea id="cfgCustomStyle" rows="2" placeholder="默认采用官方日乙轻小说文风，可在此输入自定义文风覆盖..." style="background: #14091c; border: 1.5px solid #e06bb2; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; font-family: inherit; resize: none;"></textarea>
+        <textarea id="cfgCustomStyle" rows="2" placeholder="自定义文风覆盖..." style="background: #14091c; border: 1.5px solid #e06bb2; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; resize: none;"></textarea>
       </div>
 
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #8e496d; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
@@ -582,7 +574,7 @@
         <input type="text" id="cfgChatBase" placeholder="Base URL: https://api.openai.com/v1" style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         <input type="password" id="cfgChatKey" placeholder="API Key: sk-..." style="background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 32px; padding: 0 8px; color: #fff; font-size: 12px; outline: none;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #ffd6eb; font-size: 11px; font-weight: bold;">模型 (Model):</span>
+          <span style="color: #ffd6eb; font-size: 11px; font-weight: bold;">模型:</span>
           <button type="button" onclick="fetchChatModels()" style="background: #ff528c; color: white; border: none; border-radius: 6px; font-size: 10.5px; font-weight: bold; padding: 2px 8px; cursor: pointer;">🔄 拉取</button>
         </div>
         <div class="custom-select-wrap">
@@ -602,10 +594,8 @@
         </div>
         <div class="custom-select-wrap">
           <select id="cfgMiniMaxVoiceModelSelect" onchange="document.getElementById('cfgMiniMaxVoiceModel').value = this.value">
-            <option value="speech-2.8-hd">speech-2.8-hd (高清2.8代 推荐)</option>
-            <option value="speech-01-turbo">speech-01-turbo (极速高响应)</option>
-            <option value="speech-01-hd">speech-01-hd (高质量)</option>
-            <option value="speech-02-turbo">speech-02-turbo (快速)</option>
+            <option value="speech-2.8-hd">speech-2.8-hd (高清)</option>
+            <option value="speech-01-turbo">speech-01-turbo (极速)</option>
           </select>
           <div class="custom-select-arrow">▼</div>
         </div>
@@ -636,16 +626,6 @@
         </div>
       </div>
 
-      <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #5a73b5; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-        <div style="color: #9cb5ff; font-size: 12.5px; font-weight: 900;">🧠 记忆自动总结 & 导出</div>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span style="color: #ffd6eb; font-size: 11px;">自动压缩轮次:</span>
-          <input type="number" id="cfgSummaryRounds" min="4" max="50" value="8" style="width: 55px; background: #14091c; border: 1.5px solid #5a73b5; border-radius: 6px; height: 26px; color: #fff; text-align: center; font-size: 11.5px; outline: none;">
-        </div>
-        <textarea id="cfgSummaryPrompt" rows="2" style="background: #14091c; border: 1.5px solid #5a73b5; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; font-family: inherit; resize: none;">请以简短客观的条目，总结双方发生的核心事件、好感度增减、约定与称呼变化。</textarea>
-        <button type="button" onclick="exportChatHistory()" style="background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%); color: white; border: none; height: 32px; border-radius: 8px; font-size: 11.5px; font-weight: bold; cursor: pointer;">📋 导出完整对话记录 (.txt)</button>
-      </div>
-
       <div id="fetchStatus" style="font-size: 11px; color: #ff9ec6; min-height: 14px;"></div>
 
       <div style="display: flex; gap: 10px;">
@@ -658,28 +638,7 @@
 
   <script>
     /* ============================================================
-     * 1. 核心安全解密与 Blob 预加载机制 (绝不报错方案)
-     * ============================================================ */
-    const DECRYPT_KEY = 0x7B;
-
-    function decryptArrayBuffer(buffer) {
-      const data = new Uint8Array(buffer);
-      const limit = Math.min(data.length, 1024);
-      for (let i = 0; i < limit; i++) {
-        data[i] ^= DECRYPT_KEY;
-      }
-      return data;
-    }
-
-    async function loadAndDecryptAsset(url) {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`加载文件失败: ${url} (HTTP ${resp.status})`);
-      const rawBuf = await resp.arrayBuffer();
-      return decryptArrayBuffer(rawBuf);
-    }
-
-    /* ============================================================
-     * 2. Live2D 动态模型渲染
+     * 官方纯净直读渲染（彻底移除所有拦截劫持代码）
      * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
@@ -697,41 +656,13 @@
       });
 
       try {
-        console.log("正在从 model/ 读取加密模型配置...");
-        // 1. 读取配置文件
-        const jsonResp = await fetch('model/naihuangbao2.model3.json');
-        if (!jsonResp.ok) throw new Error(`找不到配置文件 model/naihuangbao2.model3.json (HTTP ${jsonResp.status})`);
-        const modelJson = await jsonResp.json();
-
-        // 2. 解密 .moc3 核心文件并转为 Blob URL
-        const mocPath = 'model/' + modelJson.FileReferences.Moc;
-        console.log("正在解密核心数据:", mocPath);
-        const decMocBytes = await loadAndDecryptAsset(mocPath);
-        const mocBlob = new Blob([decMocBytes], { type: 'application/octet-stream' });
-        const mocBlobUrl = URL.createObjectURL(mocBlob);
-        modelJson.FileReferences.Moc = mocBlobUrl;
-
-        // 3. 解密所有材质贴图并转为 Blob URL
-        const textures = modelJson.FileReferences.Textures;
-        for (let i = 0; i < textures.length; i++) {
-          const texPath = 'model/' + textures[i];
-          console.log(`正在解密贴图 [${i + 1}/${textures.length}]:`, texPath);
-          const decTexBytes = await loadAndDecryptAsset(texPath);
-          const texBlob = new Blob([decTexBytes], { type: 'image/png' });
-          textures[i] = URL.createObjectURL(texBlob);
-        }
-
-        // 4. 将配置文件以 Blob URL 喂给 Pixi Live2D 引擎
-        const modifiedJsonBlob = new Blob([JSON.stringify(modelJson)], { type: 'application/json' });
-        const finalJsonUrl = URL.createObjectURL(modifiedJsonBlob);
-
+        console.log("正在以官方纯净模式加载模型...");
         live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
           autoInteract: false
         });
 
         live2dApp.stage.addChild(live2dModel);
 
-        // 视口比例与位置自适应
         const scaleX = (stage.clientWidth * 0.95) / live2dModel.width;
         const scaleY = (stage.clientHeight * 0.95) / live2dModel.height;
         const finalScale = Math.min(scaleX, scaleY);
@@ -741,7 +672,7 @@
         live2dModel.x = stage.clientWidth / 2;
         live2dModel.y = stage.clientHeight / 2 + 30;
 
-        console.log("✅ Live2D 动态模型内存解密与渲染成功！");
+        console.log("✅ Live2D 动态模型渲染成功！");
       } catch (err) {
         console.error("Live2D 加载异常:", err);
       }
@@ -798,9 +729,7 @@
       }
     }
 
-    /* ============================================================
-     * 3. 像素小羊绘制
-     * ============================================================ */
+    /* 像素小羊 */
     function drawPixelSheep() {
       const cvs = document.getElementById('sheepCanvas');
       if (!cvs) return;
@@ -848,35 +777,7 @@
     }
     drawPixelSheep();
 
-    /* ============================================================
-     * 4. 官方文风体系
-     * ============================================================ */
-    const DEFAULT_OTOME_STYLE = `
-<Writing_Style>
-[STYLE: JAPANESE_OTOME_LIGHT_NOVEL · 女性向日系轻小说通用文风体系]
-
-【一、 环境与光影感官：轻薄透气、空间共振】
-1. 微距镜头与物理温度：
-   - 聚焦微小细节：垂落的发丝擦过锁骨的微痒、指尖悬停在皮肤边缘带起的微妙气流、衣料纤维互相摩擦的细响、瞳孔因情绪起伏产生的一瞬收缩。
-   - 强调温度差与触觉残余：指尖的微凉对比呼吸的滚烫；触碰离开之后，皮肤表面迟迟未散去的麻痒与虚空感。
-2. 光影折射与留白：
-   - 物理质感与明暗交界：百叶窗切碎的光斑、黄昏斜照在眼睫投下的阴翳。
-   - 环境共振：空气的冷暖、钟表的滴答、布料陷入软垫的褶皱，都在渲染暗流涌动。
-
-【二、 对话心理学：言不由衷、语势推拉】
-1. 攻防倒错与非直球反诘：
-   - 严禁直白陈述与流水账！说话带着试探、反问与心理防御，将主动权伪装成“是你在诱惑我/是你逼我出手的”。
-   - 嘴硬心软：看似上位者，细微动作却暴露出动摇；看似玩世不恭，却总在直球前溃不成军。
-2. 声律感与呼吸留白：
-   - 善用短句、倒装、促音断裂（……っ）、省略号留白。日文必须带有乙女助词（……っ、〜のかよ、〜くせに、……馬鹿）。
-   - 中文台词极度克制（0~15字），日文台词沙哑压抑。
-   - 严禁机械复读语气词！绝对不要句句加“哼/咩”。
-</Writing_Style>
-`;
-
-    /* ============================================================
-     * 5. 开屏与身份
-     * ============================================================ */
+    /* 身份与开屏 */
     let playerName = localStorage.getItem('nai_player_name') || '';
     let playerPersona = localStorage.getItem('nai_player_persona') || '普通人类';
 
@@ -898,13 +799,11 @@
     }
 
     function submitPlayerProfile() {
-      const nameInput = document.getElementById('initPlayerName');
-      const personaInput = document.getElementById('initPlayerPersona');
-      const nameVal = nameInput.value.trim();
-      const personaVal = personaInput.value.trim() || '普通人类';
+      const nameVal = document.getElementById('initPlayerName').value.trim();
+      const personaVal = document.getElementById('initPlayerPersona').value.trim() || '普通人类';
 
       if (!nameVal) {
-        alert("请输入一个名字哦！");
+        alert("请输入名字！");
         return;
       }
       playerName = nameVal;
@@ -917,22 +816,17 @@
     }
 
     function resetOpeningProfile() {
-      if (confirm("确定要重置当前身份吗？下次进入将重新弹出开屏命名卡片。")) {
+      if (confirm("确定重置身份？")) {
         localStorage.removeItem('nai_player_name');
         localStorage.removeItem('nai_player_persona');
         location.reload();
       }
     }
 
-    /* ============================================================
-     * 6. 系统提示词初始化与记忆
-     * ============================================================ */
+    /* 剧情与交互 */
     let chatHistory = [];
-    let compressedMemory = "";
-
     function initSystemPrompt() {
       const customStyle = localStorage.getItem('nai_custom_style') || '';
-      const activeStyle = customStyle.trim() ? customStyle.trim() : DEFAULT_OTOME_STYLE;
       const scriptLines = localStorage.getItem('nai_script_lines') || '4';
 
       const promptText = `
@@ -940,41 +834,25 @@
 姓名：奈（Nai）
 性别：男
 目前：被关在手机屏幕里的魅魔小羊王子大人
-年龄：250岁
-性向：双性恋
-昵称：小羊、王子大人
-对话对象：${playerName || '你'}（身份/人设：${playerPersona || '普通人类'}）
+对话对象：${playerName || '你'}（身份：${playerPersona || '普通人类'}）
 
-【核心人设】
-傲娇、小恶魔雌小鬼性格，嘴硬但防御力极低，一旦被直球反制就会慌乱破防、脸红认输。
-⚠️ 绝对禁止在句末机械式加“哼”或“咩”！依靠日乙声律和情感推拉展现魅力。
+【格式要求】
+严格输出 ${scriptLines} 行：
+[ACT:表情代码] 动作描写（30~40字）
+[TALK:表情代码] 中文台词 | 日文台词
 
-【段落行数与演出格式死命令】
-本次回复必须【严格且恰好包含 ${scriptLines} 段】（由动作行与台词行交替组成，严禁超出或减少）！
-格式规则：
-1. 动作描写行：必须以 \`[ACT:表情代码]\` 开头，字数严格在 30~40 字之间。
-2. 台词语言行：必须以 \`[TALK:表情代码]\` 开头，中文台词严格在 0~15 字以内，用 \`|\` 隔开对应的地道日文配音短句。
-
-可用表情代码列表：
-IDLE, POUT, SHY, HEART, CRY, STAR, PILLOW, DIZZY, DARK
-
-【当前生效文风准则】
-${activeStyle}
-${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` : ''}
+表情代码：IDLE, POUT, SHY, HEART, CRY, STAR, PILLOW, DIZZY, DARK
+${customStyle ? `\n【文风要求】\n${customStyle}` : ''}
 `;
       chatHistory = [{ role: "system", content: promptText }];
     }
 
-    /* ============================================================
-     * 7. 用户交互与多步演出
-     * ============================================================ */
     let scriptQueue = [];
     let currentStepIndex = 0;
     let isTyping = false;
     let pendingUserInputs = [];
     let currentVoiceBlob = null;
     let audioPlayer = new Audio();
-    let roundCount = 0;
 
     const nameBadge = document.getElementById('nameBadge');
     const badgeName = document.getElementById('badgeName');
@@ -1000,7 +878,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
         badgeName.textContent = playerName || "你";
         dialogueContent.className = "dialogue-content";
         dialogueContent.textContent = text;
-        statusText.textContent = `已就绪 (${pendingUserInputs.length}句) · 点发送`;
+        statusText.textContent = `已就绪 · 点发送`;
         btnPlayVoice.style.opacity = '0.3';
         btnRetryVoice.style.opacity = '0.3';
         btnDownloadVoice.style.display = 'none';
@@ -1017,11 +895,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
         const talkMatch = line.match(/^\[TALK:([A-Z0-9_]+)\]\s*(.*)$/);
 
         if (actMatch) {
-          queue.push({
-            speaker: 'ACT',
-            emo: actMatch[1],
-            text: actMatch[2].trim()
-          });
+          queue.push({ speaker: 'ACT', emo: actMatch[1], text: actMatch[2].trim() });
         } else if (talkMatch) {
           const parts = talkMatch[2].split('|');
           queue.push({
@@ -1030,13 +904,6 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
             zh: (parts[0] || '').trim(),
             ja: (parts[1] || parts[0] || '').trim()
           });
-        } else {
-          queue.push({
-            speaker: 'NAI',
-            emo: 'IDLE',
-            zh: line,
-            ja: line
-          });
         }
       });
       return queue;
@@ -1044,7 +911,6 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
 
     function showSentence(index) {
       if (index < 0 || index >= scriptQueue.length) return;
-
       currentStepIndex = index;
       const item = scriptQueue[index];
       currentVoiceBlob = null;
@@ -1081,9 +947,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       void dialogueBox.offsetWidth;
       dialogueBox.classList.add('bounce');
 
-      if (shouldTalk) {
-        startModelLipSync();
-      }
+      if (shouldTalk) startModelLipSync();
 
       let i = 0;
       const timer = setInterval(() => {
@@ -1093,9 +957,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
         } else {
           clearInterval(timer);
           isTyping = false;
-          if (audioPlayer.paused) {
-            stopModelLipSync();
-          }
+          if (audioPlayer.paused) stopModelLipSync();
         }
       }, 30);
     }
@@ -1122,9 +984,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       }
     }
 
-    /* ============================================================
-     * 8. MiniMax 语音配音
-     * ============================================================ */
+    /* 语音合成 */
     async function synthesizeMiniMaxVoice(textToSpeak) {
       const chatKey = localStorage.getItem('nai_chat_key');
       const voiceKey = localStorage.getItem('nai_minimax_voice_key');
@@ -1136,7 +996,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       const pitch = parseInt(localStorage.getItem('nai_minimax_voice_pitch') || '0', 10);
 
       if (!mmKey || !mmGroup) {
-        alert("请先在设置中配置 MiniMax API Key 和 Group ID！");
+        alert("请先设置 MiniMax API Key 和 Group ID！");
         openConfigModal();
         return;
       }
@@ -1168,7 +1028,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
 
           audioPlayer.src = URL.createObjectURL(currentVoiceBlob);
           audioPlayer.play();
-          statusText.textContent = "🔊 正在说话...";
+          statusText.textContent = "🔊 说话中...";
           btnDownloadVoice.style.display = 'inline-flex';
 
           audioPlayer.onplay = () => { startModelLipSync(); };
@@ -1176,11 +1036,8 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
             stopModelLipSync();
             statusText.textContent = "播放完毕"; 
           };
-        } else {
-          statusText.textContent = "合成无音频";
         }
       } catch (err) {
-        console.error(err);
         statusText.textContent = "合成出错";
       }
     }
@@ -1188,10 +1045,7 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
     function onPlayVoiceClick(e) {
       e.stopPropagation();
       const item = scriptQueue[currentStepIndex];
-      if (!item || item.speaker !== 'NAI') {
-        statusText.textContent = "动作描写无需朗读";
-        return;
-      }
+      if (!item || item.speaker !== 'NAI') return;
       if (currentVoiceBlob && audioPlayer.src) {
         audioPlayer.currentTime = 0;
         audioPlayer.play();
@@ -1216,15 +1070,11 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       if (!currentVoiceBlob) return;
       const a = document.createElement('a');
       a.href = URL.createObjectURL(currentVoiceBlob);
-      a.download = `奈_${playerName}_${Date.now()}.mp3`;
+      a.download = `奈_${Date.now()}.mp3`;
       a.click();
     }
 
-    /* ============================================================
-     * 9. 对话与剧情
-     * ============================================================ */
     let lastSentUserText = "";
-
     async function sendMessage(isReroll = false) {
       let textToSend = "";
       if (isReroll) {
@@ -1246,18 +1096,13 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       const chatModel = localStorage.getItem('nai_chat_model') || 'gpt-4o-mini';
 
       if (!chatKey) {
-        alert("请先点击右上角 ⚙️ 设置 API Key！");
+        alert("请先设置 API Key！");
         openConfigModal();
         return;
       }
 
-      statusText.textContent = isReroll ? "💫 重新思考中..." : "奈思考中...";
-      
-      if (!isReroll) {
-        chatHistory.push({ role: "user", content: `【${playerName}】: ${textToSend}` });
-        roundCount++;
-        checkAndTriggerMemorySummary();
-      }
+      statusText.textContent = "奈思考中...";
+      if (!isReroll) chatHistory.push({ role: "user", content: `【${playerName}】: ${textToSend}` });
 
       try {
         const response = await fetch(chatBase.replace(/\/+$/, '') + '/chat/completions', {
@@ -1284,94 +1129,30 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
         }
 
         scriptQueue = parseStoryScript(rawReply);
-        if (scriptQueue.length > 0) {
-          showSentence(0);
-        }
-
+        if (scriptQueue.length > 0) showSentence(0);
       } catch (err) {
-        console.error(err);
-        dialogueContent.textContent = "网络连接失败，请检查你的 API 配置。";
+        dialogueContent.textContent = "网络连接失败，请检查 API 配置。";
         statusText.textContent = "连接异常";
       }
     }
 
     function onRerollStoryClick(e) {
       e.stopPropagation();
-      if (!lastSentUserText) {
-        alert("暂无上一轮对话可重答！");
-        return;
-      }
+      if (!lastSentUserText) return;
       sendMessage(true);
     }
 
-    async function checkAndTriggerMemorySummary() {
-      const summaryRounds = parseInt(localStorage.getItem('nai_summary_rounds') || '8', 10);
-      if (roundCount >= summaryRounds) {
-        roundCount = 0;
-        const chatKey = localStorage.getItem('nai_chat_key');
-        const chatBase = localStorage.getItem('nai_chat_base') || 'https://api.openai.com/v1';
-        const chatModel = localStorage.getItem('nai_chat_model') || 'gpt-4o-mini';
-        const summaryPromptTpl = localStorage.getItem('nai_summary_prompt') || '请简短总结双方核心进展、约定与好感度。';
-
-        try {
-          const summarizeMsgs = [
-            ...chatHistory.slice(1),
-            { role: "user", content: `系统指令：${summaryPromptTpl}` }
-          ];
-          const res = await fetch(chatBase.replace(/\/+$/, '') + '/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${chatKey}` },
-            body: JSON.stringify({ model: chatModel, messages: summarizeMsgs, temperature: 0.3 })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            compressedMemory = data.choices[0].message.content.trim();
-            const recent = chatHistory.slice(-4);
-            initSystemPrompt();
-            chatHistory = [chatHistory[0], ...recent];
-          }
-        } catch (e) {
-          console.warn("记忆压缩失败:", e);
-        }
-      }
-    }
-
-    function exportChatHistory() {
-      let exportText = `=== 奈的手机禁闭日常 - 互动档案 ===\n`;
-      exportText += `玩家: ${playerName} (${playerPersona})\n`;
-      exportText += `导出时间: ${new Date().toLocaleString()}\n`;
-      exportText += `----------------------------------------\n\n`;
-
-      chatHistory.forEach(item => {
-        if (item.role === 'user') {
-          exportText += `${item.content}\n\n`;
-        } else if (item.role === 'assistant') {
-          exportText += `【奈】:\n${item.content}\n\n`;
-        }
-      });
-
-      const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `奈的记忆_${playerName}_${Date.now()}.txt`;
-      a.click();
-    }
-
-    /* ============================================================
-     * 10. 设置面板数据绑定
-     * ============================================================ */
+    /* 设置面板 */
     const configModal = document.getElementById('configModal');
     const cfgPlayerName = document.getElementById('cfgPlayerName');
     const cfgPlayerPersona = document.getElementById('cfgPlayerPersona');
     const cfgScriptLines = document.getElementById('cfgScriptLines');
     const linesValText = document.getElementById('linesValText');
     const cfgCustomStyle = document.getElementById('cfgCustomStyle');
-
     const cfgChatBase = document.getElementById('cfgChatBase');
     const cfgChatKey = document.getElementById('cfgChatKey');
     const cfgChatModel = document.getElementById('cfgChatModel');
     const cfgChatModelSelect = document.getElementById('cfgChatModelSelect');
-
     const cfgMiniMaxGroupId = document.getElementById('cfgMiniMaxGroupId');
     const cfgMiniMaxVoiceKey = document.getElementById('cfgMiniMaxVoiceKey');
     const cfgMiniMaxVoiceModel = document.getElementById('cfgMiniMaxVoiceModel');
@@ -1382,51 +1163,34 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
     const cfgVoicePitch = document.getElementById('cfgVoicePitch');
     const speedValText = document.getElementById('speedValText');
     const pitchValText = document.getElementById('pitchValText');
-
-    const cfgSummaryRounds = document.getElementById('cfgSummaryRounds');
-    const cfgSummaryPrompt = document.getElementById('cfgSummaryPrompt');
     const fetchStatus = document.getElementById('fetchStatus');
 
     function loadSavedConfig() {
       cfgPlayerName.value = localStorage.getItem('nai_player_name') || '';
       cfgPlayerPersona.value = localStorage.getItem('nai_player_persona') || '普通人类';
-
       const savedLines = localStorage.getItem('nai_script_lines') || '4';
       cfgScriptLines.value = savedLines;
       linesValText.textContent = savedLines + '行';
-
       cfgCustomStyle.value = localStorage.getItem('nai_custom_style') || '';
-
       cfgChatBase.value = localStorage.getItem('nai_chat_base') || 'https://api.openai.com/v1';
       cfgChatKey.value = localStorage.getItem('nai_chat_key') || '';
       cfgChatModel.value = localStorage.getItem('nai_chat_model') || 'gpt-4o-mini';
-
       cfgMiniMaxGroupId.value = localStorage.getItem('nai_minimax_group') || '';
       cfgMiniMaxVoiceKey.value = localStorage.getItem('nai_minimax_voice_key') || '';
-      
       const savedModel = localStorage.getItem('nai_minimax_voice_model') || 'speech-2.8-hd';
       cfgMiniMaxVoiceModel.value = savedModel;
       cfgMiniMaxVoiceModelSelect.value = savedModel;
-
       cfgVoiceLang.value = localStorage.getItem('nai_minimax_voice_lang') || 'ja';
       cfgVoiceId.value = localStorage.getItem('nai_minimax_voice') || 'moss_audio_120';
-      
       const savedSpeed = localStorage.getItem('nai_minimax_voice_speed') || '1.0';
       cfgVoiceSpeed.value = savedSpeed;
       speedValText.textContent = savedSpeed + 'x';
-
       const savedPitch = localStorage.getItem('nai_minimax_voice_pitch') || '0';
       cfgVoicePitch.value = savedPitch;
       pitchValText.textContent = savedPitch;
-
-      cfgSummaryRounds.value = localStorage.getItem('nai_summary_rounds') || '8';
-      cfgSummaryPrompt.value = localStorage.getItem('nai_summary_prompt') || '请以简短客观的条目，总结双方发生的核心事件、好感度增减、约定与称呼变化。';
     }
 
-    function openConfigModal() { 
-      loadSavedConfig();
-      configModal.style.display = 'flex'; 
-    }
+    function openConfigModal() { loadSavedConfig(); configModal.style.display = 'flex'; }
     function closeConfigModal() { configModal.style.display = 'none'; }
 
     function saveConfig() {
@@ -1434,14 +1198,11 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       playerPersona = cfgPlayerPersona.value.trim() || '普通人类';
       localStorage.setItem('nai_player_name', playerName);
       localStorage.setItem('nai_player_persona', playerPersona);
-
       localStorage.setItem('nai_script_lines', cfgScriptLines.value);
       localStorage.setItem('nai_custom_style', cfgCustomStyle.value);
-
       localStorage.setItem('nai_chat_base', cfgChatBase.value.trim());
       localStorage.setItem('nai_chat_key', cfgChatKey.value.trim());
       localStorage.setItem('nai_chat_model', cfgChatModel.value.trim());
-
       localStorage.setItem('nai_minimax_group', cfgMiniMaxGroupId.value.trim());
       localStorage.setItem('nai_minimax_voice_key', cfgMiniMaxVoiceKey.value.trim());
       localStorage.setItem('nai_minimax_voice_model', cfgMiniMaxVoiceModel.value.trim());
@@ -1449,13 +1210,9 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       localStorage.setItem('nai_minimax_voice', cfgVoiceId.value.trim());
       localStorage.setItem('nai_minimax_voice_speed', cfgVoiceSpeed.value);
       localStorage.setItem('nai_minimax_voice_pitch', cfgVoicePitch.value);
-
-      localStorage.setItem('nai_summary_rounds', cfgSummaryRounds.value);
-      localStorage.setItem('nai_summary_prompt', cfgSummaryPrompt.value.trim());
-
       initSystemPrompt();
       closeConfigModal();
-      alert("所有配置已保存并实时生效！");
+      alert("配置已保存！");
     }
 
     async function fetchChatModels() {
@@ -1474,7 +1231,6 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const resData = await res.json();
         let list = Array.isArray(resData.data) ? resData.data.map(i => i.id) : [];
-        if (!list.length) throw new Error("无数据");
         cfgChatModelSelect.innerHTML = '<option value="">-- 请点选拉取到的模型 --</option>';
         list.forEach(m => {
           const opt = document.createElement('option');
@@ -1487,7 +1243,6 @@ ${compressedMemory ? `\n【此前发生的记忆摘要】\n${compressedMemory}` 
       }
     }
 
-    // 页面初始化
     loadSavedConfig();
     initSystemPrompt();
     handleOpeningFlow();
