@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
 
-  <!-- 官方标准库 -->
+  <!-- 官方标准库（全部免费开源，MIT 协议） -->
   <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.8/dist/browser/pixi.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -165,7 +165,7 @@
       border: 3.5px solid #ff9ec6;
       border-radius: 24px;
       padding: 14px 18px 10px 18px;
-      min-height: 116px;
+      min-height: 124px;
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6), 
                   inset 0 0 0 1.5px rgba(255, 255, 255, 0.18),
                   inset 0 4px 12px rgba(255, 158, 198, 0.25);
@@ -181,17 +181,17 @@
 
     .dialogue-content {
       color: #fff0f7;
-      font-size: 15.5px;
+      font-size: 15px;
       font-weight: 900;
-      line-height: 1.6;
+      line-height: 1.65;
       letter-spacing: 0.6px;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-      min-height: 52px;
-      max-height: 120px;
+      min-height: 56px;
+      max-height: 130px;
       overflow-y: auto;
     }
     .dialogue-content.action-mode {
-      color: #e2b9d8;
+      color: #f1cbe4;
       font-style: italic;
       font-size: 14.5px;
     }
@@ -557,15 +557,27 @@
         </div>
       </div>
 
+      <!-- 剧情、行数与字数区间 -->
       <div style="background: rgba(0,0,0,0.25); border: 1.5px solid #e06bb2; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-        <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 剧情与文风</div>
+        <div style="color: #ff9ec6; font-size: 12.5px; font-weight: 900;">🖋️ 剧情、段落与字数</div>
+        
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #ffd6eb; font-size: 11px;">单轮演出段落行数:</span>
+          <span style="color: #ffd6eb; font-size: 11px;">演出段落行数:</span>
           <div style="display: flex; align-items: center; gap: 4px;">
             <input type="range" id="cfgScriptLines" min="2" max="6" step="1" value="4" oninput="document.getElementById('linesValText').textContent = this.value + '行'" style="width: 80px; accent-color: #ff7ebb;">
             <span id="linesValText" style="color: #ffb8d6; font-size: 11px; font-weight: bold; width: 25px;">4行</span>
           </div>
         </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <span style="color: #ffd6eb; font-size: 11px; white-space: nowrap;">单轮回复字数:</span>
+          <div style="display: flex; align-items: center; gap: 4px; flex: 1;">
+            <input type="number" id="cfgWordMin" placeholder="350" style="width: 50%; background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 30px; text-align: center; color: #fff; font-size: 11.5px; outline: none;">
+            <span style="color: #ff9ec6; font-size: 11px;">~</span>
+            <input type="number" id="cfgWordMax" placeholder="500" style="width: 50%; background: #14091c; border: 1.5px solid #8e496d; border-radius: 8px; height: 30px; text-align: center; color: #fff; font-size: 11.5px; outline: none;">
+          </div>
+        </div>
+
         <textarea id="cfgCustomStyle" rows="2" placeholder="自定义文风覆盖..." style="background: #14091c; border: 1.5px solid #e06bb2; border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; outline: none; resize: none;"></textarea>
       </div>
 
@@ -638,25 +650,33 @@
 
   <script>
     /* ============================================================
-     * 黄金比例 + 高清抗锯齿 + 高频灵动眨眼 + 情绪镜头缩放与摇晃
+     * Pixi 官方管线原生渲染绑定（PIXI.Ticker 原生帧驱动）
      * ============================================================ */
     let live2dApp = null;
     let live2dModel = null;
-    let mouthParamTimer = null;
-    let idleAnimTimer = null;
     let isSpeaking = false;
 
     // 基础视口标准缩放与坐标
     let baseScale = 1.0;
-    let targetCameraScaleMult = 1.0;  // 情绪镜头放大乘数
+    let targetCameraScaleMult = 1.0;
     let currentCameraScaleMult = 1.0;
-    let targetCameraOffsetY = 0;      // 情绪镜头垂直偏移
+    let targetCameraOffsetY = 0;
     let currentCameraOffsetY = 0;
+
+    // 原生生命动态状态量
+    let lifeFrame = 0;
+    let blinkValue = 1.0;
+    let nextBlinkFrame = 60;
+    let isDoubleBlink = false;
+    let mouthOpenValue = 0;
+    let mouthTargetValue = 0;
+    let mouthToggleTimer = 0;
 
     async function initLive2D() {
       const canvas = document.getElementById('live2dCanvas');
       const stage = document.querySelector('.char-stage');
 
+      // 1. 初始化 Pixi 渲染器（绑定原生抗锯齿与设备像素比）
       live2dApp = new PIXI.Application({
         view: canvas,
         transparent: true,
@@ -667,14 +687,15 @@
       });
 
       try {
-        console.log("正在载入奈NA模型并挂载灵动系统...");
+        console.log("正在以 Pixi 原生渲染管线加载模型...");
         live2dModel = await PIXI.live2d.Live2DModel.from('model/naihuangbao2.model3.json', {
           autoInteract: false
         });
 
+        // 2. 原生添加到渲染树
         live2dApp.stage.addChild(live2dModel);
 
-        // 基准尺寸（视口的 1.15 倍）
+        // 3. 尺寸与锚点校准
         baseScale = (stage.clientHeight * 1.15) / live2dModel.height;
         live2dModel.scale.set(baseScale);
         live2dModel.anchor.set(0.5, 0.5);
@@ -682,14 +703,16 @@
         live2dModel.x = stage.clientWidth * 0.50;
         live2dModel.y = stage.clientHeight * 0.53;
 
-        initCharacterLife();
-        console.log("✅ Live2D 动态系统就绪！");
+        // 4. 接入 Pixi 官方原生渲染 Ticker 循环（无需 setInterval）
+        bindPixiNativePipeline();
+
+        console.log("✅ Pixi 原生渲染管线驱动就绪！");
       } catch (err) {
         console.error("Live2D 加载异常:", err);
       }
     }
 
-    function initCharacterLife() {
+    function bindPixiNativePipeline() {
       if (!live2dModel || !live2dModel.internalModel || !live2dModel.internalModel.coreModel) return;
       const core = live2dModel.internalModel.coreModel;
       const stage = document.querySelector('.char-stage');
@@ -698,72 +721,79 @@
         if (live2dModel.motion) live2dModel.motion('待机');
       } catch (e) {}
 
-      let frame = 0;
-      let blinkVal = 1.0;
-      let nextBlinkTime = 45; // 大幅提升眨眼频率：1.5~2.5秒一次
-      let isDoubleBlink = false; // 双瞬眨标记
+      // 接入 PIXI.Ticker 原生帧循环
+      live2dApp.ticker.add((delta) => {
+        lifeFrame += delta;
 
-      if (idleAnimTimer) clearInterval(idleAnimTimer);
-      idleAnimTimer = setInterval(() => {
-        frame++;
-
-        // 1. 高频自然灵动眨眼（带小动物式双瞬眨）
-        if (frame >= nextBlinkTime) {
-          blinkVal -= 0.35;
-          if (blinkVal <= 0) {
-            blinkVal = 0;
-            frame = 0;
+        // A. 灵动高频眨眼算法（带小魅魔双瞬眨）
+        if (lifeFrame >= nextBlinkFrame) {
+          blinkValue -= 0.12 * delta;
+          if (blinkValue <= 0) {
+            blinkValue = 0;
+            lifeFrame = 0;
             if (!isDoubleBlink && Math.random() < 0.35) {
-              // 35% 几率触发紧接着的第二次快速萌感眨眼
               isDoubleBlink = true;
-              nextBlinkTime = 12;
+              nextBlinkFrame = 14;
             } else {
               isDoubleBlink = false;
-              nextBlinkTime = Math.floor(Math.random() * 45) + 35; // 1~2.5秒
+              nextBlinkFrame = Math.floor(Math.random() * 80) + 70; // 约 1.5~2.5 秒
             }
           }
-        } else if (blinkVal < 1.0) {
-          blinkVal = Math.min(1.0, blinkVal + 0.4);
+        } else if (blinkValue < 1.0) {
+          blinkValue = Math.min(1.0, blinkValue + 0.15 * delta);
         }
 
-        // 2. 镜头平滑动态缩放（随情绪缩放特写）
-        currentCameraScaleMult += (targetCameraScaleMult - currentCameraScaleMult) * 0.08;
-        currentCameraOffsetY += (targetCameraOffsetY - currentCameraOffsetY) * 0.08;
+        // B. 情绪镜头缩放与位移平滑插值
+        currentCameraScaleMult += (targetCameraScaleMult - currentCameraScaleMult) * 0.08 * delta;
+        currentCameraOffsetY += (targetCameraOffsetY - currentCameraOffsetY) * 0.08 * delta;
         live2dModel.scale.set(baseScale * currentCameraScaleMult);
         live2dModel.y = (stage.clientHeight * 0.53) + currentCameraOffsetY;
 
-        try {
-          core.setParameterValueById('ParamEyeLOpen', blinkVal);
-          core.setParameterValueById('ParamEyeROpen', blinkVal);
+        // C. 说话口型开合平滑插值
+        if (isSpeaking) {
+          mouthToggleTimer += delta;
+          if (mouthToggleTimer > 9) {
+            mouthTargetValue = (mouthTargetValue > 0.4) ? 0.1 : 0.85;
+            mouthToggleTimer = 0;
+          }
+        } else {
+          mouthTargetValue = 0;
+        }
+        mouthOpenValue += (mouthTargetValue - mouthOpenValue) * 0.25 * delta;
 
-          // 保持嘴角甜度
+        // D. 物理参数直驱
+        try {
+          core.setParameterValueById('ParamEyeLOpen', blinkValue);
+          core.setParameterValueById('ParamEyeROpen', blinkValue);
+          core.setParameterValueById('ParamMouthOpenY', mouthOpenValue);
+
+          // 常态保持嘴角甜度
           core.setParameterValueById('ParamMouthForm', 0.65);
 
-          // 3. 身体与头部晃动逻辑
+          // E. 身体与头部晃动逻辑
+          const time = lifeFrame * 0.04;
           if (isSpeaking) {
-            // 说话期间：生动娇憨地左右偏头晃脑、重心律动
-            const headTilt = Math.sin(frame * 0.08) * 7.5;
-            const bodyTilt = Math.sin(frame * 0.08) * 3.2;
+            const headTilt = Math.sin(time * 1.6) * 7.5;
+            const bodyTilt = Math.sin(time * 1.6) * 3.2;
             core.setParameterValueById('ParamAngleZ', headTilt);
             core.setParameterValueById('ParamBodyAngleZ', bodyTilt);
-            core.setParameterValueById('ParamAngleX', Math.cos(frame * 0.08) * 4.5);
+            core.setParameterValueById('ParamAngleX', Math.cos(time * 1.6) * 4.5);
           } else {
-            // 平时待机：轻柔呼吸慢摇
-            const headIdle = Math.sin(frame * 0.035) * 2.2;
-            const bodyIdle = Math.sin(frame * 0.035) * 1.2;
+            const headIdle = Math.sin(time * 0.8) * 2.2;
+            const bodyIdle = Math.sin(time * 0.8) * 1.2;
             core.setParameterValueById('ParamAngleZ', headIdle);
             core.setParameterValueById('ParamBodyAngleZ', bodyIdle);
             core.setParameterValueById('ParamAngleX', headIdle * 0.4);
           }
 
-          // 呼吸参数
-          const breath = Math.sin(frame * 0.04) * 0.35 + 0.5;
+          // 呼吸波形
+          const breath = Math.sin(time * 0.9) * 0.35 + 0.5;
           core.setParameterValueById('ParamBreath', breath);
         } catch (e) {}
-      }, 30);
+      });
     }
 
-    /* 情绪联动与动态镜头缩放 */
+    /* 原生表情管理器调度 */
     const EXP_MAP = {
       "POUT": "生气",
       "SHY": "脸红",
@@ -779,69 +809,45 @@
     function setModelExpression(emoCode) {
       if (!live2dModel || !live2dModel.internalModel) return;
 
-      // 1. 动态镜头随情绪缩放与沉浮
+      // 1. 镜头随情绪拉伸
       if (emoCode.includes("HEART") || emoCode.includes("STAR")) {
-        // 撒娇/心动/开心：镜头拉近特写（贴近屏幕感）
         targetCameraScaleMult = 1.22;
         targetCameraOffsetY = -15;
       } else if (emoCode.includes("SHY") || emoCode.includes("DARK") || emoCode.includes("POUT")) {
-        // 害羞破防/吃醋/后退：镜头稍缩远一点避开视线
         targetCameraScaleMult = 1.04;
         targetCameraOffsetY = 10;
       } else if (emoCode.includes("CRY") || emoCode.includes("PILLOW")) {
-        // 委屈抱枕/哭哭认输：高度微降下沉
         targetCameraScaleMult = 1.10;
         targetCameraOffsetY = 20;
       } else {
-        // 默认常态比例
         targetCameraScaleMult = 1.0;
         targetCameraOffsetY = 0;
       }
 
-      // 2. 表情部件联动叠加
+      // 2. 原生 ExpressionManager 调度
       try {
         if (live2dModel.expressionManager) {
-          // 常驻待机呆毛摆动
           try { live2dModel.expression("呆毛摆动"); } catch (e) {}
-
           for (const key in EXP_MAP) {
             if (emoCode.includes(key)) {
               live2dModel.expression(EXP_MAP[key]);
             }
           }
-
-          // 概率触发爱心眼（在开心/舒服/心动时）
           if (emoCode.includes("HEART") && Math.random() < 0.4) {
             live2dModel.expression("爱心眼");
           }
         }
       } catch (e) {
-        console.warn("表情联动异常:", e);
+        console.warn("表情调度异常:", e);
       }
     }
 
     function startModelLipSync() {
-      stopModelLipSync();
       isSpeaking = true;
-      let toggle = false;
-      mouthParamTimer = setInterval(() => {
-        if (live2dModel && live2dModel.internalModel && live2dModel.internalModel.coreModel) {
-          const val = toggle ? 0.85 : 0.15;
-          live2dModel.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', val);
-          toggle = !toggle;
-        }
-      }, 150);
     }
 
     function stopModelLipSync() {
       isSpeaking = false;
-      if (mouthParamTimer) {
-        clearInterval(mouthParamTimer);
-        mouthParamTimer = null;
-      }
-      if (live2dModel && live2dModel.internalModel && live2dModel.internalModel.coreModel) {
-        live2dModel.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', 0);
-      }
     }
 
     /* 像素小羊 */
@@ -939,12 +945,14 @@
     }
 
     /* ============================================================
-     * 完整人设体系与精确外观锁定（奈NA）
+     * 500字扩写规范 + 完整人设体系与瞳色绝对校准
      * ============================================================ */
     let chatHistory = [];
     function initSystemPrompt() {
       const customStyle = localStorage.getItem('nai_custom_style') || '';
       const scriptLines = localStorage.getItem('nai_script_lines') || '4';
+      const wordMin = localStorage.getItem('nai_word_min') || '350';
+      const wordMax = localStorage.getItem('nai_word_max') || '500';
 
       const promptText = `
 【核心人设档案：奈（NA）】
@@ -973,10 +981,15 @@
 - 魅魔特征：身体两侧漂浮着一对半透明的粉色魅魔小肉翼（蝠翼）。
 - 服饰装扮：浅薄荷绿露脐裹胸吊带，搭配云朵般粉白宽大落肩斗篷；下着薄荷绿南瓜短裤与粉色堆堆袜，脚踩毛茸茸小羊厚底居家鞋。左耳垂挂长方形符牌耳饰，颈戴深色细环 Choker。
 
-【段落行数与演出格式死命令】
-每次回复必须【严格且恰好包含 ${scriptLines} 段】（动作描写与台词交替）：
-[ACT:表情代码] 动作细节描写（30~40字，突出微距触感、隔着屏幕的推拉与温度）
-[TALK:表情代码] 中文台词（0~15字以内） | 日文台词（原汁原味日乙口吻，善用促音、省略号留白）
+【字数与演出篇幅死命令（必须严格遵守）】
+1. 本轮回复总字数必须严格达到【${wordMin} 字到 ${wordMax} 字之间】，杜绝任何短小干瘪！
+2. 每次回复必须严格且恰好包含【${scriptLines} 段】（动作细节描写与台词交替进行）。
+3. 每段 [ACT] 动作细节必须展开写满 70~100 字：深刻刻画奈NA隔着手机玻璃的微距互动、呼吸打在屏幕上的薄雾、手指抵在玻璃内侧的用力发白、心形呆毛的羞涩打转、耳尖血色与水晶角的温差颤动。
+4. 每段 [TALK] 台词必须包含中日双语，台词充满傲娇、句尾习惯性轻哼、被戳破后的羞窘断句，具有日乙沉浸感。
+
+演出格式模板：
+[ACT:表情代码] 细致长段动作描写（70~100字）
+[TALK:表情代码] 中文台词 | 日文台词
 
 可用表情代码：
 IDLE（常态微抿嘴）, POUT（生气傲娇）, SHY（害羞脸红）, HEART（爱心眼撒娇）, CRY（哭哭破防）, STAR（星星眼期待）, PILLOW（抱枕软萌认输）, DIZZY（圈圈眼眩晕）, DARK（黑脸吃醋）, COTTON（掏棉签敏感）
@@ -1097,7 +1110,7 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
           isTyping = false;
           if (audioPlayer.paused) stopModelLipSync();
         }
-      }, 30);
+      }, 25);
     }
 
     function prevSentence(e) {
@@ -1286,6 +1299,8 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
     const cfgPlayerPersona = document.getElementById('cfgPlayerPersona');
     const cfgScriptLines = document.getElementById('cfgScriptLines');
     const linesValText = document.getElementById('linesValText');
+    const cfgWordMin = document.getElementById('cfgWordMin');
+    const cfgWordMax = document.getElementById('cfgWordMax');
     const cfgCustomStyle = document.getElementById('cfgCustomStyle');
     const cfgChatBase = document.getElementById('cfgChatBase');
     const cfgChatKey = document.getElementById('cfgChatKey');
@@ -1309,6 +1324,8 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       const savedLines = localStorage.getItem('nai_script_lines') || '4';
       cfgScriptLines.value = savedLines;
       linesValText.textContent = savedLines + '行';
+      cfgWordMin.value = localStorage.getItem('nai_word_min') || '350';
+      cfgWordMax.value = localStorage.getItem('nai_word_max') || '500';
       cfgCustomStyle.value = localStorage.getItem('nai_custom_style') || '';
       cfgChatBase.value = localStorage.getItem('nai_chat_base') || 'https://api.openai.com/v1';
       cfgChatKey.value = localStorage.getItem('nai_chat_key') || '';
@@ -1337,6 +1354,8 @@ ${customStyle ? `\n【补充文风准则】\n${customStyle}` : ''}
       localStorage.setItem('nai_player_name', playerName);
       localStorage.setItem('nai_player_persona', playerPersona);
       localStorage.setItem('nai_script_lines', cfgScriptLines.value);
+      localStorage.setItem('nai_word_min', cfgWordMin.value.trim() || '350');
+      localStorage.setItem('nai_word_max', cfgWordMax.value.trim() || '500');
       localStorage.setItem('nai_custom_style', cfgCustomStyle.value);
       localStorage.setItem('nai_chat_base', cfgChatBase.value.trim());
       localStorage.setItem('nai_chat_key', cfgChatKey.value.trim());
